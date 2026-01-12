@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - FEREST</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/carrito.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <span class="logo-icon">🍸</span>
+                <span class="logo-text">FEREST</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="index.html#tragos">Tragos</a></li>
+                    <li><a href="index.html#promociones">Promociones</a></li>
+                    <li><a href="carrito.html" class="active cart-link">
+                        Carrito <span class="cart-count" id="cart-count">0</span>
+                    </a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="login.html" class="admin-link">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="carrito-hero">
+        <div class="container">
+            <h1>Tu Carrito de Compras</h1>
+            <p>Revisa y confirma tu pedido antes de contactarnos</p>
+        </div>
+    </section>
+
+    <section class="carrito-content">
+        <div class="container">
+            <div class="carrito-grid">
+                <div class="carrito-items">
+                    <div class="carrito-header">
+                        <h2>Productos en el Carrito</h2>
+                        <button class="btn btn-clear" id="clear-cart">Limpiar Carrito</button>
+                    </div>
+                    
+                    <div id="carrito-lista" class="carrito-lista">
+                        <!-- Los items del carrito se cargarán aquí -->
+                    </div>
+                    
+                    <div class="carrito-summary">
+                        <div class="summary-item">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">S/ 0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Delivery:</span>
+                            <span id="delivery">S/ 0.00</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total:</span>
+                            <span id="total">S/ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkout-form">
+                    <div class="checkout-card">
+                        <h2>Información de Contacto</h2>
+                        <p class="checkout-description">
+                            Completa tus datos y nos comunicaremos contigo para coordinar la entrega
+                        </p>
+                        
+                        <form id="checkoutForm">
+                            <div class="form-group">
+                                <label for="clienteNombre">Nombre completo *</label>
+                                <input type="text" id="clienteNombre" name="clienteNombre" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clienteTelefono">Teléfono *</label>
+                                <input type="tel" id="clienteTelefono" name="clienteTelefono" 
+                                       placeholder="Ej: 987654321" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clienteEmail">Email *</label>
+                                <input type="email" id="clienteEmail" name="clienteEmail" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clienteDireccion">Dirección de entrega *</label>
+                                <textarea id="clienteDireccion" name="clienteDireccion" rows="3" 
+                                         placeholder="Dirección completa, referencia, distrito..." required></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="metodoPago">Método de pago preferido</label>
+                                <select id="metodoPago" name="metodoPago">
+                                    <option value="efectivo">Efectivo</option>
+                                    <option value="yape">Yape</option>
+                                    <option value="plin">Plin</option>
+                                    <option value="transferencia">Transferencia</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="observaciones">Observaciones adicionales</label>
+                                <textarea id="observaciones" name="observaciones" rows="3" 
+                                         placeholder="Instrucciones especiales, horario preferido, etc."></textarea>
+                            </div>
+                            
+                            <div class="checkout-actions">
+                                <a href="index.html" class="btn btn-secondary">
+                                    ← Seguir Comprando
+                                </a>
+                                <button type="submit" class="btn btn-primary" id="enviarPedido">
+                                    📞 Contactar por WhatsApp
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="delivery-info">
+                        <h3>🚚 Información de Delivery</h3>
+                        <ul>
+                            <li>• Entrega en 30-45 minutos</li>
+                            <li>• Zona de cobertura: Lima Metropolitana</li>
+                            <li>• Horario: 16:00 - 02:00</li>
+                            <li>• Delivery gratis en compras mayores a S/ 50</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">🍸</span>
+                        <span class="logo-text">FEREST</span>
+                    </div>
+                    <p class="footer-description">
+                        Tu destino para los mejores tragos y licores con delivery inmediato. 
+                        Calidad y sabor en cada sorbo.
+                    </p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Contacto Rápido</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="contact-icon">📞</span>
+                            <span>+51 987 654 321</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">✉️</span>
+                            <span>pedidos@ferest.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">🕒</span>
+                            <span>Lun-Dom: 16:00 - 02:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="warning-banner">
+                    <span>⚠️ PROHIBIDA LA VENTA A MENORES DE EDAD • CONSUMA CON MODERACIÓN</span>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2024 FEREST Licorería. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="js/carrito.js"></script>
+</body>
+</html>

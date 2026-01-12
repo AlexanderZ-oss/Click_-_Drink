@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - FEREST</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: #2d2d2d;
+            padding: 30px 20px;
+            border-right: 2px solid #d4af37;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: #1a1a1a;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            margin: 80px auto;
+            padding: 50px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #d4af37;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #444;
+            background: #1a1a1a;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            border-color: #d4af37;
+            outline: none;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            padding: 30px 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #444;
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #d4af37;
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+        }
+        
+        .stat-card div:last-child {
+            color: #ccc;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .products-grid, .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .product-card, .user-card {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .product-card:hover, .user-card:hover {
+            transform: translateY(-3px);
+            border-color: #d4af37;
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.2);
+        }
+        
+        .product-card h3, .user-card h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 8px;
+        }
+        
+        .product-card p, .user-card p {
+            margin-bottom: 8px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+        
+        .product-actions, .user-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            color: black;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #d4af37;
+            border: 2px solid #d4af37;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-secondary:hover {
+            background: #d4af37;
+            color: black;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .loading-card {
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            grid-column: 1 / -1;
+            border: 2px dashed #d4af37;
+        }
+
+        .loading-card h3 {
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .loading-card p {
+            color: #ccc;
+            font-size: 16px;
+        }
+
+        .sidebar h2 {
+            color: #d4af37;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+            border-bottom: 2px solid #d4af37;
+            padding-bottom: 15px;
+        }
+
+        .user-info {
+            background: rgba(212, 175, 55, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #d4af37;
+            text-align: center;
+        }
+
+        .user-info strong {
+            color: #d4af37;
+            font-size: 1.1em;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #d4af37;
+            transform: translateX(5px);
+        }
+
+        .sidebar-nav a:active {
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        .logout-btn {
+            margin-top: 20px;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        .logout-btn:hover {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .section-title {
+            color: #d4af37;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+            border-bottom: 3px solid #d4af37;
+            padding-bottom: 15px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .login-header h2 {
+            color: #d4af37;
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #ccc;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        #loginError {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-card, .product-card, .user-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 2px solid #d4af37;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+            
+            .products-grid, .users-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn-primary, .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-header">
+            <h2>🔐 Administración FEREST</h2>
+            <p>Ingrese sus credenciales de administrador</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuario:</label>
+                <input type="text" id="username" required placeholder="Ingresa tu usuario">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" required placeholder="Ingresa tu contraseña">
+            </div>
+            <button type="submit">🎯 Ingresar al Panel</button>
+        </form>
+        <div id="loginError">
+            Credenciales incorrectas. Por favor, verifica tus datos.
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: rgba(212, 175, 55, 0.1); border-radius: 8px; border: 1px solid #d4af37;">
+            <h4 style="color: #d4af37; margin-bottom: 15px;">👑 Administradores del Sistema</h4>
+            <div style="text-align: left; color: #ccc; font-size: 14px;">
+                <div style="margin-bottom: 8px;">• <strong>lenin</strong> - lenin123</div>
+                <div style="margin-bottom: 8px;">• <strong>keyner</strong> - keyner123</div>
+                <div style="margin-bottom: 8px;">• <strong>airson</strong> - airson123</div>
+                <div>• <strong>pedrito</strong> - pedrito123</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel de Administración -->
+    <div id="adminPanel" class="admin-container hidden">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>🍸 FEREST ADMIN</h2>
+            
+            <div class="user-info">
+                <strong>👤 Bienvenido: </strong>
+                <span id="adminUsername">Administrador</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" id="dashboardLink" onclick="showSection('dashboard')">
+                    📊 Dashboard Principal
+                </a>
+                <a href="#" id="productsLink" onclick="showSection('products')">
+                    🍸 Gestión de Productos
+                </a>
+                <a href="#" id="usersLink" onclick="showSection('users')">
+                    👥 Gestión de Usuarios
+                </a>
+                <a href="#" class="logout-btn" onclick="logout()">
+                    🚪 Cerrar Sesión
+                </a>
+            </nav>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboardSection">
+                <h1 class="section-title">📊 Dashboard Principal</h1>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-number">...</div>
+                        <div>Total Productos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">...</div>
+                        <div>Productos Activos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">...</div>
+                        <div>Usuarios Registrados</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">...</div>
+                        <div>Stock Bajo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestión de Productos -->
+            <div id="productsSection" style="display: none;">
+                <div class="section-header">
+                    <h1 class="section-title">🍸 Gestión de Productos</h1>
+                    <button class="btn-primary" onclick="showAddProductForm()">
+                        ➕ Agregar Nuevo Producto
+                    </button>
+                </div>
+                <div class="products-grid" id="productsGrid">
+                    <div class="loading-card">
+                        <h3>📦 Cargando Productos...</h3>
+                        <p>Espere un momento por favor</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestión de Usuarios -->
+            <div id="usersSection" style="display: none;">
+                <div class="section-header">
+                    <h1 class="section-title">👥 Gestión de Usuarios</h1>
+                    <div style="display: flex; gap: 15px;">
+                        <button class="btn-secondary" onclick="loadUsers()">
+                            🔄 Actualizar Lista
+                        </button>
+                    </div>
+                </div>
+                <div class="users-grid" id="usersGrid">
+                    <div class="loading-card">
+                        <h3>👤 Cargando Usuarios...</h3>
+                        <p>Espere un momento por favor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>
