@@ -6,17 +6,35 @@ import { supabase } from '../lib/supabase';
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
-    const [scrolled, setScrolled] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
+            if (session?.user) {
+                checkAdminRole(session.user.id);
+            }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
+            if (session?.user) {
+                checkAdminRole(session.user.id);
+            } else {
+                setIsAdmin(false);
+            }
         });
+
+        const checkAdminRole = async (userId: string) => {
+            const { data } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            setIsAdmin(data?.role === 'admin');
+        };
 
         const handleScroll = () => {
             if (window.scrollY > 50) {
@@ -71,7 +89,7 @@ const Navbar = () => {
                         <Link to="/contact" className={`text-sm font-medium hover:text-[#d4af37] transition-colors ${location.pathname === '/contact' ? 'text-[#d4af37]' : 'text-gray-300'}`}>
                             CONTACTO
                         </Link>
-                        {user && (
+                        {isAdmin && (
                             <Link to="/admin" className={`text-sm font-medium hover:text-[#d4af37] transition-colors ${location.pathname === '/admin' ? 'text-[#d4af37]' : 'text-gray-300'}`}>
                                 ADMIN
                             </Link>
@@ -114,7 +132,7 @@ const Navbar = () => {
                         <Link to="/" className="text-gray-300 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>INICIO</Link>
                         <Link to="/contact" className="text-gray-300 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>CONTACTO</Link>
                         <Link to="/cart" className="text-gray-300 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>CARRITO</Link>
-                        {user && <Link to="/admin" className="text-gray-300 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>ADMIN</Link>}
+                        {isAdmin && <Link to="/admin" className="text-gray-300 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>ADMIN</Link>}
                         {user ? (
                             <button onClick={() => { handleLogout(); setIsOpen(false); }} className="text-left text-red-500">CERRAR SESIÓN</button>
                         ) : (

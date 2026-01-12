@@ -8,13 +8,29 @@ const Admin = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setLoading(false);
+        const checkAccess = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
             if (!session) {
-                navigate('/'); // Redirect if not logged in
+                navigate('/');
+                return;
             }
-        });
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile?.role !== 'admin') {
+                navigate('/'); // Redirect standard users
+            } else {
+                setSession(session);
+                setLoading(false);
+            }
+        };
+
+        checkAccess();
     }, [navigate]);
 
     if (loading) return <div className="pt-32 text-center">Cargando...</div>;
