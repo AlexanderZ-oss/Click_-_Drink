@@ -7,6 +7,7 @@ import Contact from './pages/Contact';
 import Admin from './pages/Admin';
 import { Toaster } from './components/ui/Toaster';
 import { CartProvider } from './context/CartContext';
+import WhatsAppButton from './components/WhatsAppButton';
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                         </Routes>
                     </main>
                     <Footer />
+                    <WhatsAppButton />
                     <Toaster />
                 </div>
             </Router>

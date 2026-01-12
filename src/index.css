@@ -2,41 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Outfit';
+  src: url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;700;900&display=swap');
+}
+
 :root {
   --gold: #d4af37;
+  --gold-light: #f3e5ab;
   --dark: #0a0a0a;
-  --accent: #1a1a1a;
+  --accent: #111111;
 }
 
 body {
-  background-color: var(--dark);
-  color: white;
-  font-family: 'Inter', sans-serif;
-}
-
-.premium-gradient {
-  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-}
-
-.gold-text {
-  color: var(--gold);
-}
-
-.gold-border {
-  border-color: var(--gold);
+  @apply bg-[#0a0a0a] text-white selection:bg-[#d4af37] selection:text-black;
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .btn-premium {
-  @apply bg-[#d4af37] text-black font-bold py-2 px-6 rounded-md transition-all hover:bg-[#b8962d] hover:scale-105 active:scale-95;
+  @apply bg-gradient-to-r from-[#d4af37] to-[#f3e5ab] text-black font-black py-4 px-10 rounded-2xl transition-all duration-500 shadow-[0_10px_40px_rgba(212, 175, 55, 0.2)] hover:shadow-[0_15px_60px_rgba(212, 175, 55, 0.4)] hover:scale-[1.02] active:scale-95 uppercase tracking-[0.2em] italic text-[10px];
 }
 
 .btn-outline {
-  @apply border-2 border-[#d4af37] text-[#d4af37] font-bold py-2 px-6 rounded-md transition-all hover:bg-[#d4af37] hover:text-black;
+  @apply border border-[#d4af37]/30 text-[#d4af37] font-black py-4 px-10 rounded-2xl transition-all duration-500 hover:bg-[#d4af37]/10 hover:border-[#d4af37] uppercase tracking-[0.2em] italic text-[10px];
+}
+
+/* Glassmorphism */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -44,10 +48,29 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2d2d2d;
-  border-radius: 4px;
+  @apply bg-[#1a1a1a] rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4af37;
+  @apply bg-[#d4af37];
+}
+
+@keyframes gradient-x {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 15s ease infinite;
+}
+
+.shadow-3xl {
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
 }
