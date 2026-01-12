@@ -7,6 +7,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
 
     useEffect(() => {
@@ -27,13 +28,17 @@ const Navbar = () => {
         });
 
         const checkAdminRole = async (userId: string) => {
-            const { data } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', userId)
-                .single();
+            try {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', userId)
+                    .single();
 
-            setIsAdmin(data?.role === 'admin');
+                setIsAdmin(data?.role === 'admin');
+            } catch (error) {
+                console.error('Error checking admin role:', error);
+            }
         };
 
         const handleScroll = () => {

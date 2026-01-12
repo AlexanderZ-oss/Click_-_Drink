@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck, Filter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Home = () => {
     const [products, setProducts] = useState<any[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
+    const [activeCategory, setActiveCategory] = useState('TODOS');
+    const [loading, setLoading] = useState(true);
+
+    const categories = ['TODOS', 'VODKA', 'RON', 'WHISKY', 'CERVEZA', 'GIN', 'VINOS'];
 
     useEffect(() => {
         fetchProducts();
@@ -22,7 +27,9 @@ const Home = () => {
                 },
                 (payload) => {
                     console.log('Change received!', payload);
-                    fetchProducts(); // Refresh data on any change
+                    if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE' || payload.eventType === 'DELETE') {
+                        fetchProducts(); // Refresh data on any live update
+                    }
                 }
             )
             .subscribe();
@@ -32,7 +39,16 @@ const Home = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (activeCategory === 'TODOS') {
+            setFilteredProducts(products);
+        } else {
+            setFilteredProducts(products.filter(p => p.category.toUpperCase() === activeCategory));
+        }
+    }, [activeCategory, products]);
+
     const fetchProducts = async () => {
+        setLoading(true);
         const { data, error } = await supabase
             .from('products')
             .select('*')
@@ -40,11 +56,12 @@ const Home = () => {
 
         if (!error && data) {
             setProducts(data);
+            setFilteredProducts(data);
         }
+        setLoading(false);
     };
 
     const trackPageView = async () => {
-        // Simple daily page view counter
         const today = new Date().toISOString().split('T')[0];
         const { data } = await supabase
             .from('analytics')
@@ -63,16 +80,16 @@ const Home = () => {
                 .insert([{ date: today, page_views: 1, unique_visitors: 1 }]);
         }
     };
+
     return (
-        <div className="font-sans">
-            {/* ... content ... */}
+        <div className="font-sans bg-[#0a0a0a] min-h-screen text-white">
             {/* Hero Section */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img
                         src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
                         alt="Background"
-                        className="w-full h-full object-cover opacity-30"
+                        className="w-full h-full object-cover opacity-30 scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/80 via-[#0a0a0a]/50 to-[#0a0a0a]"></div>
                 </div>
@@ -81,42 +98,45 @@ const Home = () => {
                     <div className="flex flex-col lg:flex-row items-center gap-12">
                         <div className="lg:w-1/2 text-center lg:text-left">
                             <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.8 }}
                             >
-                                <h1 className="text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                                    FEREST <br />
+                                <span className="inline-block py-1 px-3 rounded-full bg-[#d4af37]/10 text-[#d4af37] text-xs font-bold tracking-widest mb-6 border border-[#d4af37]/20 uppercase">
+                                    Experiencia Premium en Licores
+                                </span>
+                                <h1 className="text-6xl lg:text-8xl font-black mb-6 leading-none">
+                                    CLINK <br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#f3e5ab]">
-                                        LICORERÍA PREMIUM
+                                        & DRINK
                                     </span>
                                 </h1>
-                                <p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto lg:mx-0">
-                                    Los mejores tragos y licores seleccionados con delivery inmediato.
-                                    Elevamos tus momentos especiales con calidad y distinción.
+                                <p className="text-gray-400 text-lg mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+                                    La licorería selecta más rápida de la ciudad. Entregamos las mejores marcas
+                                    en la puerta de tu casa en menos de 45 minutos.
                                 </p>
-                                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                                    <a href="#catalogo" className="btn-premium flex items-center justify-center gap-2 group">
+                                <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+                                    <a href="#catalogo" className="btn-premium flex items-center justify-center gap-3 px-8 py-4">
                                         VER CATÁLOGO
-                                        <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                                        <ChevronRight size={20} />
                                     </a>
-                                    <a href="#promos" className="btn-outline">
-                                        PROMOCIONES
+                                    <a href="#promos" className="btn-outline px-8 py-4">
+                                        OFERTAS EXCLUSIVAS
                                     </a>
                                 </div>
 
-                                <div className="mt-12 flex items-center justify-center lg:justify-start gap-8 text-sm text-gray-400">
-                                    <div className="flex items-center gap-2">
-                                        <Clock className="text-[#d4af37]" size={18} />
-                                        <span>Delivery 45m</span>
+                                <div className="mt-16 flex flex-wrap items-center justify-center lg:justify-start gap-10 text-xs text-gray-500 font-bold tracking-widest uppercase">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#d4af37]"><Clock size={16} /></div>
+                                        <span>45 MINUTOS</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <ShieldCheck className="text-[#d4af37]" size={18} />
-                                        <span>Pago Seguro</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#d4af37]"><ShieldCheck size={16} /></div>
+                                        <span>PAGO SEGURO</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Star className="text-[#d4af37]" size={18} />
-                                        <span>Calidad Premium</span>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-[#d4af37]"><Star size={16} /></div>
+                                        <span>PREMIUM</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -124,27 +144,24 @@ const Home = () => {
 
                         <div className="lg:w-1/2 relative hidden lg:block">
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 1, delay: 0.2 }}
-                                className="relative z-10"
+                                initial={{ opacity: 0, scale: 0.9, rotate: 2 }}
+                                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                transition={{ duration: 1 }}
+                                className="relative"
                             >
-                                {/* Floating cards effect would go here */}
-                                <div className="relative w-[500px] h-[600px] mx-auto">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1569529465841-dfecd0693295?auto=format&fit=crop&q=80&w=1000"
-                                        alt="Premium Bottle"
-                                        className="w-full h-full object-cover rounded-2xl shadow-2xl border border-[#d4af37]/30"
-                                    />
-                                    <div className="absolute -bottom-6 -right-6 bg-[#1a1a1a] p-4 rounded-xl border border-[#d4af37] shadow-xl">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-[#d4af37] flex items-center justify-center">
-                                                <ShoppingBag className="text-black" size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-gray-400">Producto Destacado</p>
-                                                <p className="font-bold text-[#d4af37]">Blue Label</p>
-                                            </div>
+                                <img
+                                    src="https://images.unsplash.com/photo-1569529465841-dfecd0693295?auto=format&fit=crop&q=80&w=1000"
+                                    alt="Premium Bottle"
+                                    className="w-[500px] h-[650px] object-cover rounded-[2rem] shadow-[0_0_50px_rgba(212,175,55,0.15)] border border-white/10"
+                                />
+                                <div className="absolute -bottom-10 -left-10 bg-[#111] p-6 rounded-2xl border border-[#d4af37]/30 shadow-2xl backdrop-blur-xl bg-opacity-80">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-[#d4af37] flex items-center justify-center text-black">
+                                            <ShoppingBag size={24} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Favorito de hoy</p>
+                                            <p className="font-bold text-white text-lg">Blue Label Limited</p>
                                         </div>
                                     </div>
                                 </div>
@@ -154,23 +171,99 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Categories Grid - simplified for now */}
-            <section className="py-20 bg-[#0a0a0a]">
+            {/* Catalog Section */}
+            <section id="catalogo" className="py-24 bg-[#0a0a0a] relative">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold mb-12 text-center">
-                        <span className="border-b-2 border-[#d4af37] pb-2">CATEGORÍAS</span>
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {['VODKA', 'RON', 'WHISKY', 'CERVEZA', 'GIN', 'VINOS'].map((cat, i) => (
-                            <div key={i} className="group relative overflow-hidden rounded-xl aspect-square bg-[#1a1a1a] border border-[#333] hover:border-[#d4af37] transition-all cursor-pointer">
-                                <div className="absolute inset-0 flex items-center justify-center flex-col gap-2 z-10">
-                                    <span className="text-2xl">🥃</span>
-                                    <h3 className="font-bold group-hover:text-[#d4af37] transition-colors">{cat}</h3>
-                                </div>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                            </div>
-                        ))}
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                        <div>
+                            <span className="text-[#d4af37] font-bold tracking-widest text-xs uppercase mb-2 block">Selección Especial</span>
+                            <h2 className="text-4xl md:text-5xl font-black text-white italic">NUESTRA <span className="text-[#d4af37]">CARTA</span></h2>
+                        </div>
+
+                        {/* Categories Filter */}
+                        <div className="flex flex-wrap gap-2">
+                            {categories.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`px-5 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase border transition-all ${activeCategory === cat
+                                            ? 'bg-[#d4af37] border-[#d4af37] text-black ring-4 ring-[#d4af37]/10'
+                                            : 'border-white/10 text-gray-400 hover:border-[#d4af37]/50 hover:text-white'
+                                        }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
                     </div>
+
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 grayscale opacity-50">
+                            <div className="w-12 h-12 border-2 border-[#d4af37] border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p className="text-xs font-bold tracking-widest">CARGANDO CATÁLOGO...</p>
+                        </div>
+                    ) : (
+                        <motion.div
+                            layout
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+                        >
+                            <AnimatePresence mode='popLayout'>
+                                {filteredProducts.map((product) => (
+                                    <motion.div
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.9 }}
+                                        key={product.id}
+                                        className="bg-[#111] rounded-2xl overflow-hidden border border-white/5 hover:border-[#d4af37]/30 transition-all group relative"
+                                    >
+                                        <div className="relative h-72 overflow-hidden">
+                                            <img
+                                                src={product.image_url || 'https://images.unsplash.com/photo-1544145945-f904253d0c7e?auto=format&fit=crop&q=80&w=800'}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            <div className="absolute top-4 left-4">
+                                                <span className="bg-[#0a0a0a]/80 backdrop-blur-md text-[#d4af37] text-[10px] font-black px-3 py-1 rounded-full border border-[#d4af37]/30 uppercase tracking-tighter">
+                                                    {product.category}
+                                                </span>
+                                            </div>
+                                            <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                                <button className="w-full btn-premium py-3 text-xs flex items-center justify-center gap-2">
+                                                    <ShoppingBag size={14} /> AÑADIR AL CARRITO
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="p-6">
+                                            <div className="flex justify-between items-start mb-2 gap-4">
+                                                <h3 className="font-bold text-white text-lg group-hover:text-[#d4af37] transition-colors leading-tight">{product.name}</h3>
+                                                <div className="text-right">
+                                                    <span className="text-xs text-gray-500 block mb-1">Precio</span>
+                                                    <span className="text-white font-black text-xl italic tracking-tighter">S/ {product.price}</span>
+                                                </div>
+                                            </div>
+                                            <p className="text-gray-500 text-xs mb-6 line-clamp-2 italic font-light">"{product.description}"</p>
+                                            <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase border-t border-white/5 pt-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${product.stock > 0 ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`}></div>
+                                                    <span>{product.stock > 0 ? `${product.stock} DISPONIBLES` : 'SIN STOCK'}</span>
+                                                </div>
+                                                <span className="text-[#d4af37]">ENVÍO EXPRESS</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
+                        </motion.div>
+                    )}
+
+                    {!loading && filteredProducts.length === 0 && (
+                        <div className="text-center py-20 border-2 border-dashed border-white/5 rounded-[2rem]">
+                            <div className="text-4xl mb-4 grayscale opacity-30">🥃</div>
+                            <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-widest">No hay stock disponible</h3>
+                            <p className="text-gray-500 max-w-xs mx-auto text-sm">Prueba seleccionando otra categoría o vuelve más tarde para ver nuevos ingresos.</p>
+                        </div>
+                    )}
                 </div>
             </section>
         </div>
