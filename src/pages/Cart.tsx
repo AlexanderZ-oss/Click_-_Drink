@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, MapPin, Truck, ChevronRight, ShoppingBag, Landmark, CreditCard, ChevronDown, CheckCircle2, FileText, AlertCircle } from 'lucide-react';
+import { Trash2, Plus, Minus, MapPin, Truck, ChevronRight, ShoppingBag, Landmark, CreditCard, ChevronDown, CheckCircle2, FileText, AlertCircle, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
