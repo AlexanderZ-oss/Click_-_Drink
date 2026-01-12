@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Package, Users, BarChart3, TrendingUp, DollarSign, Eye, ChevronRight, LayoutDashboard } from 'lucide-react';
+import { motion } from 'framer-motion';
 import ProductManager from '../components/ProductManager';
 
 const Admin = () => {
