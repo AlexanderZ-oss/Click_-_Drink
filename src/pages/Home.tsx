@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck, MapPin, Calendar, Info } from 'lucide-react';
+import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck, MapPin, Calendar, Info, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../context/CartContext';
 
 const Home = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [activeCategory, setActiveCategory] = useState('TODOS');
     const [loading, setLoading] = useState(true);
+    const [showAddedMsg, setShowAddedMsg] = useState<string | null>(null);
+    const { addToCart } = useCart();
 
     const categories = ['TODOS', 'VODKA', 'RON', 'WHISKY', 'CERVEZA', 'GIN', 'VINOS'];
 
@@ -44,6 +47,12 @@ const Home = () => {
         setLoading(false);
     };
 
+    const handleAddToCart = (product: any) => {
+        addToCart(product);
+        setShowAddedMsg(product.name);
+        setTimeout(() => setShowAddedMsg(null), 2000);
+    };
+
     const trackPageView = async () => {
         const today = new Date().toISOString().split('T')[0];
         const { data } = await supabase.from('analytics').select('id, page_views').eq('date', today).single();
@@ -56,6 +65,21 @@ const Home = () => {
 
     return (
         <div className="font-sans bg-[#0a0a0a] min-h-screen text-white">
+            {/* Added To Cart Toast */}
+            <AnimatePresence>
+                {showAddedMsg && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, x: '-50%' }}
+                        animate={{ opacity: 1, y: 0, x: '-50%' }}
+                        exit={{ opacity: 0, y: 20, x: '-50%' }}
+                        className="fixed bottom-10 left-1/2 z-[100] bg-[#d4af37] text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-2xl"
+                    >
+                        <CheckCircle2 size={18} />
+                        Añadido: {showAddedMsg}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Hero Section */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
@@ -149,13 +173,24 @@ const Home = () => {
                                                 <span className="text-white font-black text-2xl italic tracking-tighter">S/ {product.price.toFixed(2)}</span>
                                             </div>
                                         </div>
+
+                                        {product.wholesale_price && (
+                                            <div className="mb-4 bg-green-500/10 border border-green-500/20 rounded-lg p-2">
+                                                <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Precio x Mayor: S/ {product.wholesale_price.toFixed(2)}</p>
+                                                <p className="text-[9px] text-gray-400 italic">Aplíca desde {product.wholesale_min || 12} unidades</p>
+                                            </div>
+                                        )}
+
                                         <p className="text-gray-500 text-xs mb-6 line-clamp-2 italic font-light">"{product.description}"</p>
-                                        <button className="w-full btn-premium py-3 text-xs flex items-center justify-center gap-2 mb-4">
-                                            <ShoppingBag size={14} /> AGREGAR
+                                        <button
+                                            onClick={() => handleAddToCart(product)}
+                                            className="w-full btn-premium py-3 text-xs flex items-center justify-center gap-2 mb-4"
+                                        >
+                                            <ShoppingBag size={14} /> AGREGAR AL CARRITO
                                         </button>
                                         <div className="flex justify-between items-center text-[10px] text-gray-400 font-bold uppercase border-t border-white/5 pt-4 italic">
                                             <span>Mín. 1 Unid.</span>
-                                            <span className="text-blue-500">MAYORISTA DISPONIBLE</span>
+                                            <span className="text-[#d4af37]">DISPONIBLE EN TRUJILLO</span>
                                         </div>
                                     </div>
                                 </motion.div>
