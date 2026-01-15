@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck, MapPin, Calendar, Info, CheckCircle2, Award, Percent, MessageSquare, Send, Mail, Phone, Instagram, Facebook } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 const Home = () => {
@@ -132,12 +133,12 @@ const Home = () => {
                                 <span className="text-white block mt-2 font-bold not-italic">S/ 2.00 KM • ENVÍO GRATIS {'>'} S/ 100</span>
                             </p>
                             <div className="flex flex-wrap gap-6 justify-center">
-                                <a href="#catalogo" className="btn-premium px-12 py-5 text-sm">
+                                <Link to="/catalog" className="btn-premium px-12 py-5 text-sm">
                                     EXPLORAR CARTA
-                                </a>
-                                <a href="#promociones" className="btn-outline px-12 py-5 text-sm flex items-center gap-2">
+                                </Link>
+                                <Link to="/promotions" className="btn-outline px-12 py-5 text-sm flex items-center gap-2">
                                     <Percent size={18} /> PROMOCIONES
-                                </a>
+                                </Link>
                             </div>
                         </motion.div>
                     </div>
@@ -178,6 +179,58 @@ const Home = () => {
                                 <p className="text-sm font-black uppercase tracking-widest">Próximamente nuevas promociones...</p>
                             </div>
                         )}
+                    </div>
+                </div>
+            </section>
+
+            {/* Nightclubs Section Preview */}
+            <section className="py-24 bg-gradient-to-b from-[#0a0a0a] to-[#080808] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="bg-[#111] rounded-[4rem] border border-white/5 p-12 md:p-20 overflow-hidden relative group hover:border-purple-500/20 transition-all duration-500">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                            <div>
+                                <span className="text-purple-500 font-black text-[10px] tracking-[0.5em] uppercase mb-4 block italic">Nightlife & Events</span>
+                                <h2 className="text-5xl md:text-7xl font-black italic mb-8 uppercase tracking-tighter leading-none">
+                                    Packs para <br />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-gradient-x">DISCOTECAS</span>
+                                </h2>
+                                <p className="text-gray-400 text-lg mb-12 italic leading-relaxed font-light">
+                                    Abastecemos las mejores barras de Trujillo con precios de distribuidor.
+                                    Packs configurados para eventos de alto impacto y servicio VIP.
+                                </p>
+                                <div className="grid grid-cols-2 gap-8 mb-12">
+                                    <div className="space-y-2">
+                                        <p className="text-white font-black italic flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> STOCK ILIMITADO
+                                        </p>
+                                        <p className="text-gray-500 text-xs font-bold uppercase">Garantizamos disponibilidad</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <p className="text-white font-black italic flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span> PRECIO MAYORISTA
+                                        </p>
+                                        <p className="text-gray-500 text-xs font-bold uppercase">A partir de 12 unidades</p>
+                                    </div>
+                                </div>
+                                <Link to="/nightclubs" className="inline-flex items-center gap-3 bg-white text-black px-12 py-5 rounded-2xl font-black text-sm uppercase hover:bg-purple-500 hover:text-white transition-all group shadow-xl shadow-purple-500/10">
+                                    VER PACKS EXCLUSIVOS <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </div>
+                            <div className="relative">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl rounded-full scale-110"></div>
+                                <img
+                                    src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1000"
+                                    alt="Nightclub"
+                                    className="relative z-10 rounded-[3rem] border border-white/10 shadow-3xl hover:scale-[1.02] transition-transform duration-700"
+                                />
+                                <div className="absolute -bottom-6 -right-6 bg-[#d4af37] text-black w-32 h-32 rounded-full flex flex-col items-center justify-center font-black italic text-center leading-tight shadow-2xl z-20 border-4 border-[#111]">
+                                    <span className="text-xs">AHORRA</span>
+                                    <span className="text-3xl">20%</span>
+                                    <span className="text-[10px]">EN PACKS</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -1,55 +1,67 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Package, Users, BarChart3, DollarSign, Eye, ChevronRight, LayoutDashboard, ShoppingBag, Percent, Mail, Trash2, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Package, Users, BarChart3, DollarSign, Eye, ChevronRight, LayoutDashboard, ShoppingBag, Percent, Mail, Trash2, CheckCircle2, Megaphone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ProductManager from '../components/ProductManager';
 import PromoManager from '../components/PromoManager';
+import BannerManager from '../components/BannerManager';
 
 const Admin = () => {
     const [loading, setLoading] = useState(true);
-    const [session, setSession] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages'>('dashboard');
-    const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0 });
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners'>('dashboard');
+    const { user, isAdmin } = useAuth();
+    const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0, dailyRevenue: 0, dailyOrdersCount: 0 });
     const [orders, setOrders] = useState<any[]>([]);
     const [usersList, setUsersList] = useState<any[]>([]);
     const [messages, setMessages] = useState<any[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const checkAccess = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { navigate('/'); return; }
+        if (!user) {
+            navigate('/login');
+            return;
+        }
 
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-            if (profile?.role !== 'admin') {
-                navigate('/');
-            } else {
-                setSession(session);
-                setLoading(false);
-                fetchStats();
-                fetchOrders();
-                fetchUsers();
-                fetchMessages();
-            }
-        };
-        checkAccess();
-    }, [navigate]);
+        if (!isAdmin) {
+            navigate('/');
+            return;
+        }
+
+        setLoading(false);
+        fetchStats();
+        fetchOrders();
+        fetchUsers();
+        fetchMessages();
+    }, [user, isAdmin, navigate]);
 
     const fetchStats = async () => {
         const today = new Date().toISOString().split('T')[0];
         const { data: analytics } = await supabase.from('analytics').select('page_views').eq('date', today).single();
         const { count: ordersCount } = await supabase.from('orders').select('*', { count: 'exact', head: true });
+
+        // Ventas de hoy
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+        const { data: todayOrders } = await supabase.from('orders')
+            .select('total_amount')
+            .eq('status', 'paid')
+            .gte('created_at', startOfDay.toISOString());
+
         const { data: ordersData } = await supabase.from('orders').select('total_amount').eq('status', 'paid');
         const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
         const totalRevenue = ordersData?.reduce((acc, order) => acc + Number(order.total_amount), 0) || 0;
+        const dailyRevenue = todayOrders?.reduce((acc, order) => acc + Number(order.total_amount), 0) || 0;
 
         setStats({
             views: analytics?.page_views || 0,
             orders: ordersCount || 0,
             revenue: totalRevenue,
-            users: usersCount || 0
+            users: usersCount || 0,
+            dailyRevenue: dailyRevenue,
+            dailyOrdersCount: todayOrders?.length || 0
         });
     };
 
@@ -96,7 +108,7 @@ const Admin = () => {
                     <div>
                         <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-2">Panel de <span className="text-[#d4af37]">Control</span></h1>
                         <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Sistema Operativo • {session?.user?.email}
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Sistema Operativo • {user?.email}
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3 justify-center">
@@ -104,6 +116,7 @@ const Admin = () => {
                         <NavItem id="products" label="PRODUCTOS" icon={Package} />
                         <NavItem id="sales" label="VENTAS" icon={ShoppingBag} />
                         <NavItem id="promos" label="PROMOS" icon={Percent} />
+                        <NavItem id="banners" label="BANNERS" icon={Megaphone} />
                         <NavItem id="users" label="USUARIOS" icon={Users} />
                         <NavItem id="messages" label="MENSAJES" icon={Mail} />
                     </div>
@@ -111,26 +124,62 @@ const Admin = () => {
 
                 {/* Dashboard Content */}
                 {activeTab === 'dashboard' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-[#d4af37]/30 transition-all">
-                            <div className="w-16 h-16 rounded-3xl bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-6 text-[#d4af37]"><Eye /></div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Vistas Hoy</p>
-                            <p className="text-5xl font-black italic">{stats.views}</p>
+                    <div className="space-y-8">
+                        {/* Highlights Today */}
+                        <div className="bg-gradient-to-r from-[#d4af37]/20 to-transparent p-1 px-8 rounded-full inline-block border border-[#d4af37]/20">
+                            <p className="text-[10px] font-black text-[#d4af37] uppercase tracking-[0.4em] italic flex items-center gap-3">
+                                <span className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse"></span> Reporte de Hoy • {new Date().toLocaleDateString()}
+                            </p>
                         </div>
-                        <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-blue-500/30 transition-all">
-                            <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mx-auto mb-6 text-blue-500"><ShoppingBag /></div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Total Pedidos</p>
-                            <p className="text-5xl font-black italic">{stats.orders}</p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-[#d4af37]/30 transition-all shadow-xl">
+                                <div className="w-16 h-16 rounded-3xl bg-[#d4af37]/10 flex items-center justify-center mx-auto mb-6 text-[#d4af37] group-hover:scale-110 transition-transform"><DollarSign /></div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Ventas Hoy</p>
+                                <p className="text-4xl font-black italic"><span className="text-[#d4af37] text-2xl">S/</span>{(stats as any).dailyRevenue?.toLocaleString()}</p>
+                                <p className="text-[9px] text-green-500 font-bold mt-2 uppercase">{(stats as any).dailyOrdersCount} pedidos realizados</p>
+                            </div>
+                            <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-blue-500/30 transition-all shadow-xl">
+                                <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center mx-auto mb-6 text-blue-500 group-hover:scale-110 transition-transform"><ShoppingBag /></div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Vistas del Sitio</p>
+                                <p className="text-5xl font-black italic">{stats.views}</p>
+                                <p className="text-[9px] text-blue-400 font-bold mt-2 uppercase">Tráfico Real-Time</p>
+                            </div>
+                            <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-green-500/30 transition-all shadow-xl">
+                                <div className="w-16 h-16 rounded-3xl bg-green-500/10 flex items-center justify-center mx-auto mb-6 text-green-500 group-hover:scale-110 transition-transform"><BarChart3 /></div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Recaudación Total</p>
+                                <p className="text-4xl font-black italic"><span className="text-[#d4af37] text-2xl">S/</span>{stats.revenue.toLocaleString()}</p>
+                                <p className="text-[9px] text-gray-500 font-bold mt-2 uppercase">Histórico Acumulado</p>
+                            </div>
+                            <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-purple-500/30 transition-all shadow-xl">
+                                <div className="w-16 h-16 rounded-3xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 text-purple-500 group-hover:scale-110 transition-transform"><Users /></div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 italic">Nuevos Clientes</p>
+                                <p className="text-5xl font-black italic">{stats.users}</p>
+                                <p className="text-[9px] text-purple-400 font-bold mt-2 uppercase">Base CRM Ferest</p>
+                            </div>
                         </div>
-                        <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-green-500/30 transition-all">
-                            <div className="w-16 h-16 rounded-3xl bg-green-500/10 flex items-center justify-center mx-auto mb-6 text-green-500"><DollarSign /></div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Recaudación</p>
-                            <p className="text-4xl font-black italic"><span className="text-[#d4af37] text-2xl">S/</span>{stats.revenue.toLocaleString()}</p>
-                        </div>
-                        <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5 text-center group hover:border-purple-500/30 transition-all">
-                            <div className="w-16 h-16 rounded-3xl bg-purple-500/10 flex items-center justify-center mx-auto mb-6 text-purple-500"><Users /></div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Registrados</p>
-                            <p className="text-5xl font-black italic">{stats.users}</p>
+
+                        {/* Recent Orders Preview */}
+                        <div className="bg-[#111] p-10 rounded-[3rem] border border-white/5">
+                            <h3 className="text-xl font-black italic uppercase mb-6 flex items-center gap-3">
+                                Últimos Pedidos <ChevronRight size={18} className="text-[#d4af37]" />
+                            </h3>
+                            <div className="space-y-4">
+                                {orders.slice(0, 3).map(order => (
+                                    <div key={order.id} className="bg-black/40 p-5 rounded-2xl border border-white/5 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-[#d4af37]/10 flex items-center justify-center text-[#d4af37]">
+                                                <ShoppingBag size={18} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black italic uppercase text-white">#ORD-{order.id.slice(0, 8)}</p>
+                                                <p className="text-[9px] text-gray-500 font-bold uppercase">{new Date(order.created_at).toLocaleTimeString()}</p>
+                                            </div>
+                                        </div>
+                                        <p className="text-lg font-black italic text-[#d4af37]">S/ {order.total_amount}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -220,6 +269,7 @@ const Admin = () => {
 
                 {activeTab === 'products' && <ProductManager />}
                 {activeTab === 'promos' && <PromoManager />}
+                {activeTab === 'banners' && <BannerManager />}
             </div>
         </div>
     );

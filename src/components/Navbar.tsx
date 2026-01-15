@@ -1,51 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, X, LogOut, User } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { ShoppingCart, Menu, X, LogOut, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [user, setUser] = useState<any>(null);
-    const [isAdmin, setIsAdmin] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
     const { cart } = useCart();
+    const { user, profile, signOut, isAdmin } = useAuth();
 
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                checkAdminRole(session.user.id);
-            }
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                checkAdminRole(session.user.id);
-            } else {
-                setIsAdmin(false);
-            }
-        });
-
-        const checkAdminRole = async (userId: string) => {
-            try {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', userId)
-                    .single();
-
-                setIsAdmin(data?.role === 'admin');
-            } catch (error) {
-                console.error('Error checking admin role:', error);
-            }
-        };
-
         const handleScroll = () => {
             if (window.scrollY > 50) setScrolled(true);
             else setScrolled(false);
@@ -53,26 +22,12 @@ const Navbar = () => {
 
         window.addEventListener('scroll', handleScroll);
         return () => {
-            subscription.unsubscribe();
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-    };
-
-    const handleLogin = async () => {
-        try {
-            await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin
-                }
-            });
-        } catch (error) {
-            console.error('Error logging in:', error);
-        }
+        await signOut();
     };
 
     return (
@@ -90,21 +45,30 @@ const Navbar = () => {
                     </Link>
 
                     {/* Desktop Menu */}
-                    <nav className="hidden md:flex items-center gap-12">
+                    <nav className="hidden md:flex items-center gap-8">
                         <Link to="/" className={`text-[10px] font-black tracking-[0.3em] hover:text-[#d4af37] transition-all uppercase italic ${location.pathname === '/' ? 'text-[#d4af37]' : 'text-gray-400'}`}>
-                            ESCENA
+                            INICIO
+                        </Link>
+                        <Link to="/catalog" className={`text-[10px] font-black tracking-[0.3em] hover:text-[#d4af37] transition-all uppercase italic ${location.pathname === '/catalog' ? 'text-[#d4af37]' : 'text-gray-400'}`}>
+                            CATÁLOGO
+                        </Link>
+                        <Link to="/promotions" className={`text-[10px] font-black tracking-[0.3em] hover:text-[#d4af37] transition-all uppercase italic ${location.pathname === '/promotions' ? 'text-[#d4af37]' : 'text-gray-400'}`}>
+                            PROMOCIONES
+                        </Link>
+                        <Link to="/nightclubs" className={`text-[10px] font-black tracking-[0.3em] hover:text-[#d4af37] transition-all uppercase italic ${location.pathname === '/nightclubs' ? 'text-[#d4af37]' : 'text-gray-400'}`}>
+                            DISCOTECAS
                         </Link>
                         <Link to="/contact" className={`text-[10px] font-black tracking-[0.3em] hover:text-[#d4af37] transition-all uppercase italic ${location.pathname === '/contact' ? 'text-[#d4af37]' : 'text-gray-400'}`}>
                             CONTACTO
                         </Link>
                         {isAdmin && (
                             <Link to="/admin" className={`text-[10px] font-black tracking-[0.3em] text-[#d4af37] border border-[#d4af37]/30 px-4 py-2 rounded-xl hover:bg-[#d4af37] hover:text-black transition-all uppercase italic ${location.pathname === '/admin' ? 'bg-[#d4af37] text-black' : ''}`}>
-                                GESTIÓN
+                                ADMIN
                             </Link>
                         )}
                     </nav>
 
-                    <div className="hidden md:flex items-center gap-8">
+                    <div className="hidden md:flex items-center gap-4">
                         <Link to="/cart" className="relative p-3 bg-white/5 border border-white/5 rounded-2xl hover:border-[#d4af37]/30 transition-all group">
                             <ShoppingCart className="w-5 h-5 text-gray-400 group-hover:text-[#d4af37] transition-colors" />
                             {cartCount > 0 && (
@@ -117,7 +81,7 @@ const Navbar = () => {
                         {user ? (
                             <div className="flex items-center gap-4 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
                                 <div className="text-right">
-                                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{isAdmin ? 'Admin' : 'Socio'}</p>
+                                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{isAdmin ? 'Admin' : 'Usuario'}</p>
                                     <p className="text-[10px] text-white font-bold italic lowercase">{user.email?.split('@')[0]}</p>
                                 </div>
                                 <button onClick={handleLogout} className="text-gray-500 hover:text-red-500 transition-colors">
@@ -125,9 +89,20 @@ const Navbar = () => {
                                 </button>
                             </div>
                         ) : (
-                            <button onClick={handleLogin} className="btn-premium py-3 px-8 text-[9px]">
-                                ACCESO CLUB
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <Link
+                                    to="/login"
+                                    className="text-[10px] font-black text-white uppercase tracking-widest hover:text-[#d4af37] transition-all px-4 py-2"
+                                >
+                                    Ingresar
+                                </Link>
+                                <Link
+                                    to="/register"
+                                    className="bg-[#d4af37] text-black px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-[#f3e5ab] transition-all shadow-lg shadow-[#d4af37]/10"
+                                >
+                                    Unirse
+                                </Link>
+                            </div>
                         )}
                     </div>
 
@@ -147,15 +122,36 @@ const Navbar = () => {
                         className="md:hidden absolute top-full left-0 w-full bg-[#0a0a0a]/95 backdrop-blur-2xl border-b border-white/5 py-10"
                     >
                         <div className="flex flex-col items-center gap-8 font-black text-xs tracking-[0.4em] uppercase italic px-6">
-                            <Link to="/" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>ESCENA</Link>
+                            <Link to="/" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>INICIO</Link>
+                            <Link to="/catalog" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>CATÁLOGO</Link>
+                            <Link to="/promotions" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>PROMOCIONES</Link>
+                            <Link to="/nightclubs" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>DISCOTECAS</Link>
                             <Link to="/contact" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>CONTACTO</Link>
                             <Link to="/cart" className="text-gray-400 hover:text-[#d4af37]" onClick={() => setIsOpen(false)}>CARRITO ({cartCount})</Link>
-                            {isAdmin && <Link to="/admin" className="text-[#d4af37]" onClick={() => setIsOpen(false)}>ADMINISTRACIÓN</Link>}
-                            <div className="w-full pt-8 border-t border-white/10">
+                            {isAdmin && <Link to="/admin" className="text-[#d4af37]" onClick={() => setIsOpen(false)}>ADMIN</Link>}
+                            <div className="w-full pt-8 border-t border-white/10 space-y-4">
                                 {user ? (
-                                    <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full text-red-500 tracking-widest">CERRAR SESIÓN</button>
+                                    <>
+                                        <p className="text-center text-sm text-white">{user.email}</p>
+                                        <button onClick={() => { handleLogout(); setIsOpen(false); }} className="w-full text-red-500 tracking-widest">CERRAR SESIÓN</button>
+                                    </>
                                 ) : (
-                                    <button onClick={() => { handleLogin(); setIsOpen(false); }} className="btn-premium w-full">INGRESAR GOOGLE</button>
+                                    <div className="flex flex-col w-full gap-4">
+                                        <Link
+                                            to="/login"
+                                            onClick={() => setIsOpen(false)}
+                                            className="block w-full text-center py-4 bg-white/5 border border-white/10 rounded-2xl tracking-widest font-black uppercase text-[10px]"
+                                        >
+                                            INGRESAR
+                                        </Link>
+                                        <Link
+                                            to="/register"
+                                            onClick={() => setIsOpen(false)}
+                                            className="block w-full text-center py-4 bg-[#d4af37] text-black rounded-2xl tracking-widest font-black uppercase text-[10px]"
+                                        >
+                                            REGISTRARSE
+                                        </Link>
+                                    </div>
                                 )}
                             </div>
                         </div>

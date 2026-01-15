@@ -26,13 +26,16 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [cart, setCart] = useState<CartItem[]>([]);
-    const [distance, setDistance] = useState(0);
-
-    useEffect(() => {
+    const [cart, setCart] = useState<CartItem[]>(() => {
         const savedCart = localStorage.getItem('ferest_cart');
-        if (savedCart) setCart(JSON.parse(savedCart));
-    }, []);
+        try {
+            return savedCart ? JSON.parse(savedCart) : [];
+        } catch (e) {
+            console.error('Error loading cart from localStorage:', e);
+            return [];
+        }
+    });
+    const [distance, setDistance] = useState(0);
 
     useEffect(() => {
         localStorage.setItem('ferest_cart', JSON.stringify(cart));
