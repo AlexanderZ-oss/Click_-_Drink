@@ -11,6 +11,7 @@ import Contact from './pages/Contact';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Events from './pages/Events';
 import { Toaster } from './components/ui/Toaster';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -31,6 +32,7 @@ function App() {
                                     <Route path="/" element={<Home />} />
                                     <Route path="/catalog" element={<Catalog />} />
                                     <Route path="/promotions" element={<Promotions />} />
+                                    <Route path="/events" element={<Events />} />
                                     <Route path="/nightclubs" element={<Nightclubs />} />
                                     <Route path="/cart" element={<Cart />} />
                                     <Route path="/contact" element={<Contact />} />

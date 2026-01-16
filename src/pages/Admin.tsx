@@ -2,17 +2,18 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Package, Users, BarChart3, DollarSign, Eye, ChevronRight, ShoppingBag, Percent, Mail, Megaphone, LogOut, Settings } from 'lucide-react';
+import { Package, Users, BarChart3, DollarSign, Eye, ChevronRight, ShoppingBag, Percent, Mail, Megaphone, LogOut, Settings, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ProductManager from '../components/ProductManager';
 import PromoManager from '../components/PromoManager';
 import BannerManager from '../components/BannerManager';
+import EventManager from '../components/EventManager';
 
 const Admin = () => {
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners' | 'events'>('dashboard');
     const { user, isAdmin, signOut } = useAuth();
-    const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0, dailyRevenue: 0, dailyOrdersCount: 0 });
+    const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0, dailyRevenue: 0, dailyOrdersCount: 0, eventsCount: 0 });
     const [orders, setOrders] = useState<any[]>([]);
     const [usersList, setUsersList] = useState<any[]>([]);
     const [messages, setMessages] = useState<any[]>([]);
@@ -58,6 +59,7 @@ const Admin = () => {
             const { data: todayOrders } = await supabase.from('orders').select('total').eq('status', 'paid').gte('created_at', startOfDay.toISOString());
             const { data: allPaidOrders } = await supabase.from('orders').select('total').eq('status', 'paid');
             const { count: usersCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+            const { count: eventsCount } = await supabase.from('events').select('*', { count: 'exact', head: true });
 
             const totalRevenue = allPaidOrders?.reduce((acc, order) => acc + Number(order.total), 0) || 0;
             const dailyRevenue = todayOrders?.reduce((acc, order) => acc + Number(order.total), 0) || 0;
@@ -68,7 +70,8 @@ const Admin = () => {
                 revenue: totalRevenue,
                 users: usersCount || 0,
                 dailyRevenue,
-                dailyOrdersCount: todayOrders?.length || 0
+                dailyOrdersCount: todayOrders?.length || 0,
+                eventsCount: eventsCount || 0
             });
         } catch (e) {
             console.error('Stats fetch error:', e);
@@ -142,6 +145,9 @@ const Admin = () => {
                     </button>
                     <button onClick={() => setActiveTab('banners')} className={`w-full flex items-center gap-4 p-4 rounded-lg transition-colors ${activeTab === 'banners' ? 'bg-[#c5a059]/10 text-[#c5a059]' : 'text-gray-500 hover:bg-white/5'}`}>
                         <Megaphone size={20} /><span className="hidden lg:block text-xs font-bold uppercase tracking-widest">Anuncios</span>
+                    </button>
+                    <button onClick={() => setActiveTab('events')} className={`w-full flex items-center gap-4 p-4 rounded-lg transition-colors ${activeTab === 'events' ? 'bg-[#c5a059]/10 text-[#c5a059]' : 'text-gray-500 hover:bg-white/5'}`}>
+                        <Calendar size={20} /><span className="hidden lg:block text-xs font-bold uppercase tracking-widest">Eventos</span>
                     </button>
                 </nav>
                 <div className="p-4 mt-auto border-t border-white/5">
@@ -236,6 +242,7 @@ const Admin = () => {
                             </div>
                         )}
                         {activeTab === 'banners' && <BannerManager />}
+                        {activeTab === 'events' && <EventManager />}
                         {activeTab === 'sales' && (
                             <div className="border border-white/5 bg-[#080808] rounded-lg p-10">
                                 <h2 className="text-2xl font-serif italic mb-10">Bitácora de Ventas</h2>
