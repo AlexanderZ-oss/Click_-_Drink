@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
-import { getSupabaseStatus } from '../lib/supabase';
+import { getConnectionStatus } from '../lib/supabase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,7 +12,7 @@ const Login = () => {
     const [error, setError] = useState<string | null>(null);
     const { signIn } = useAuth();
     const navigate = useNavigate();
-    const status = getSupabaseStatus();
+    const status = getConnectionStatus();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,8 +48,8 @@ const Login = () => {
                     <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded mb-8 flex gap-4 items-start">
                         <AlertTriangle className="text-amber-500 shrink-0" size={20} />
                         <div>
-                            <p className="text-amber-200 text-[10px] font-bold uppercase tracking-widest mb-1">Sin Conexión a Base de Datos</p>
-                            <p className="text-amber-200/60 text-[10px] leading-relaxed">Las llaves de Supabase no han sido detectadas. Ve a <Link to="/debug" className="underline text-amber-500">Diagnóstico</Link> para más detalles.</p>
+                            <p className="text-amber-200 text-[10px] font-bold uppercase tracking-widest mb-1">Sin Conexión al Servidor</p>
+                            <p className="text-amber-200/60 text-[10px] leading-relaxed">Las credenciales de acceso no han sido detectadas. Ve a <Link to="/debug" className="underline text-amber-500">Diagnóstico</Link> para más detalles.</p>
                         </div>
                     </div>
                 )}
@@ -65,7 +65,7 @@ const Login = () => {
                         <label className="text-[9px] font-bold text-gray-400 border-l border-[#c5a059] pl-3 uppercase tracking-widest">Correo de Usuario</label>
                         <div className="relative group">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-[#c5a059] transition-colors" size={16} />
-                            <input required type="email" className="w-full pl-12 bg-white/5 border border-white/5 py-4 focus:border-[#c5a059] transition-all outline-none text-white font-light text-sm" placeholder="usuario@ferest.pe" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input required type="email" className="w-full pl-12 bg-white/5 border border-white/5 py-4 focus:border-[#c5a059] transition-all outline-none text-white font-light text-sm" placeholder="usuario@sistema.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
                     </div>
 
@@ -93,3 +93,4 @@ const Login = () => {
 };
 
 export default Login;
+
