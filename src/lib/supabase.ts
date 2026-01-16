@@ -7,4 +7,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Supabase credentials missing. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '')
+const defaultUrl = 'https://placeholder-project.supabase.co'
+const defaultKey = 'placeholder-key'
+
+export const supabase = createClient(
+    supabaseUrl || defaultUrl,
+    supabaseAnonKey || defaultKey
+)
