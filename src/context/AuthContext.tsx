@@ -31,14 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfile(session.user.id);
+        const initAuth = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await fetchProfile(session.user.id);
+                }
+            } catch (e) {
+                console.error('Session init error:', e);
             }
-        });
+        };
+
+        initAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
@@ -61,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .eq('id', userId)
                 .single();
 
-            if (!error) {
+            if (!error && data) {
                 setProfile(data);
             }
         } catch (error) {
@@ -70,32 +76,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const signInWithGoogle = async () => {
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/`,
-            },
-        });
-        return { error };
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: `${window.location.origin}/` },
+            });
+            return { error };
+        } catch (e) {
+            return { error: e };
+        }
     };
 
     const signIn = async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return { error };
+        try {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            return { error };
+        } catch (e) {
+            return { error: e };
+        }
     };
 
     const signUp = async (email: string, password: string, fullName: string) => {
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { full_name: fullName } },
-        });
-        return { error };
+        try {
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { full_name: fullName } },
+            });
+            return { error };
+        } catch (e) {
+            return { error: e };
+        }
     };
 
     const signOut = async () => {
         await supabase.auth.signOut();
         setProfile(null);
+        setUser(null);
+        setSession(null);
     };
 
     const isAdmin = profile?.role === 'admin' || user?.email === 'leninzumaran0@gmail.com';

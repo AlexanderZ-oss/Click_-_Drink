@@ -27,9 +27,11 @@ const Home = () => {
 
     useEffect(() => {
         if (activeCategory === 'TODOS') {
-            setFilteredProducts(products);
+            setFilteredProducts(products || []);
         } else {
-            setFilteredProducts(products.filter(p => p.category.toUpperCase() === activeCategory));
+            setFilteredProducts((products || []).filter(p =>
+                p && p.category && p.category.toString().toUpperCase() === activeCategory
+            ));
         }
     }, [activeCategory, products]);
 
