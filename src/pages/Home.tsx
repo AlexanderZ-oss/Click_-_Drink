@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { ShoppingBag, ChevronRight, Star, Clock, ShieldCheck, MapPin, Calendar, Info, CheckCircle2, Award, Percent, MessageSquare, Send, Mail, Phone, Instagram, Facebook } from 'lucide-react';
+import { ShoppingBag, Star, Clock, ShieldCheck, MapPin, Percent, Send, Mail, Phone, Instagram, Facebook, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -9,56 +9,44 @@ const Home = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [promotions, setPromotions] = useState<any[]>([]);
-    const [reviews, setReviews] = useState<any[]>([]);
     const [activeCategory, setActiveCategory] = useState('TODOS');
     const [loading, setLoading] = useState(true);
     const [showAddedMsg, setShowAddedMsg] = useState<string | null>(null);
-    const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
     const { addToCart } = useCart();
 
-    const categories = ['TODOS', 'VODKA', 'RON', 'WHISKY', 'CERVEZA', 'GIN', 'VINOS'];
+    const categories = ['TODOS', 'VODKA', 'RON', 'WHISKY', 'GIN', 'VINOS'];
 
     useEffect(() => {
-        fetchProducts();
-        fetchPromotions();
-        fetchReviews();
-        trackPageView();
+        fetchData();
     }, []);
 
-    useEffect(() => {
-        if (activeCategory === 'TODOS') {
-            setFilteredProducts(products || []);
-        } else {
-            setFilteredProducts((products || []).filter(p =>
-                p && p.category && p.category.toString().toUpperCase() === activeCategory
-            ));
-        }
-    }, [activeCategory, products]);
-
-    const fetchProducts = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase.from('products').select('*').eq('active', true);
-            if (!error && data) {
-                setProducts(data);
-                setFilteredProducts(data);
+            const [prodRes, promoRes] = await Promise.all([
+                supabase.from('products').select('*').eq('active', true),
+                supabase.from('promotions').select('*').eq('active', true)
+            ]);
+
+            if (prodRes.data) {
+                setProducts(prodRes.data);
+                setFilteredProducts(prodRes.data);
             }
+            if (promoRes.data) setPromotions(promoRes.data);
         } catch (e) {
-            console.error('Fetch error:', e);
+            console.error('Error fetching home data:', e);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchPromotions = async () => {
-        const { data } = await supabase.from('promotions').select('*').eq('active', true);
-        if (data) setPromotions(data);
-    };
-
-    const fetchReviews = async () => {
-        const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6);
-        if (data) setReviews(data);
-    };
+    useEffect(() => {
+        if (activeCategory === 'TODOS') {
+            setFilteredProducts(products);
+        } else {
+            setFilteredProducts(products.filter(p => p.category?.toUpperCase() === activeCategory));
+        }
+    }, [activeCategory, products]);
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -66,358 +54,169 @@ const Home = () => {
         setTimeout(() => setShowAddedMsg(null), 2000);
     };
 
-    const handleContactSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const { error } = await supabase.from('messages').insert([{
-            name: contactForm.name,
-            email: contactForm.email,
-            message: contactForm.message,
-            subject: 'Contacto desde Web'
-        }]);
-        if (!error) {
-            alert('Mensaje enviado con éxito. Nos pondremos en contacto contigo pronto!');
-            setContactForm({ name: '', email: '', message: '' });
-        }
-    };
-
-    const trackPageView = async () => {
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const { data } = await supabase.from('analytics').select('id, page_views').eq('date', today).single();
-            if (data) {
-                await supabase.from('analytics').update({ page_views: data.page_views + 1 }).eq('id', data.id);
-            } else {
-                await supabase.from('analytics').insert([{ date: today, page_views: 1, total_revenue: 0 }]);
-            }
-        } catch (e) {
-            // Ignorar errores de analíticas para no bloquear la app
-        }
-    };
-
     return (
-        <div className="font-sans bg-[#0a0a0a] min-h-screen text-white overflow-x-hidden">
-            {/* Added To Cart Toast */}
+        <div className="bg-[#050505] min-h-screen text-white">
+            {/* Added Toast - Sleek & Small */}
             <AnimatePresence>
                 {showAddedMsg && (
                     <motion.div
-                        initial={{ opacity: 0, y: 50, x: '-50%' }}
-                        animate={{ opacity: 1, y: 0, x: '-50%' }}
-                        exit={{ opacity: 0, y: 20, x: '-50%' }}
-                        className="fixed bottom-10 left-1/2 z-[100] bg-[#d4af37] text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-2xl border border-black/10"
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-[#c5a059] text-black px-8 py-3 rounded-full font-bold text-[10px] tracking-[0.2em] uppercase shadow-2xl"
                     >
-                        <CheckCircle2 size={18} />
-                        <span className="uppercase text-[10px] tracking-widest font-black">Añadido: {showAddedMsg}</span>
+                        Añadido: {showAddedMsg}
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Hero Section */}
+            {/* Cinematic Hero */}
             <section className="relative h-screen flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src="https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&q=80&w=1920"
-                        alt="Background"
-                        className="w-full h-full object-cover opacity-20 scale-105"
+                    <div className="absolute inset-0 bg-black/60 z-10"></div>
+                    <motion.img
+                        initial={{ scale: 1.1 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 10, ease: "linear" }}
+                        src="https://images.unsplash.com/photo-1569701881644-02deb3312ae5?auto=format&fit=crop&q=80&w=1920"
+                        className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-transparent to-[#0a0a0a]"></div>
                 </div>
 
-                <div className="container relative z-10 px-4">
-                    <div className="flex flex-col items-center text-center">
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1 }}
-                            className="max-w-4xl"
-                        >
-                            <span className="inline-block py-2 px-6 rounded-full bg-white/5 backdrop-blur-md text-[#d4af37] text-[10px] font-black tracking-[0.3em] mb-8 border border-[#d4af37]/20 uppercase">
-                                Trujillo • Licorería Premium • Delivery VIP
-                            </span>
-                            <h1 className="text-7xl md:text-9xl font-black mb-8 leading-none italic tracking-tighter">
-                                FEREST <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#d4af37] bg-[length:200%_auto] animate-gradient-x">
-                                    PREMIUM
-                                </span>
-                            </h1>
-                            <p className="text-gray-400 text-xl mb-12 max-w-2xl mx-auto leading-relaxed font-light italic">
-                                La selección más exclusiva de licores del mundo, ahora en Trujillo.
-                                <span className="text-white block mt-2 font-bold not-italic">S/ 2.00 KM • ENVÍO GRATIS {'>'} S/ 100</span>
-                            </p>
-                            <div className="flex flex-wrap gap-6 justify-center">
-                                <Link to="/catalog" className="btn-premium px-12 py-5 text-sm">
-                                    EXPLORAR CARTA
-                                </Link>
-                                <Link to="/promotions" className="btn-outline px-12 py-5 text-sm flex items-center gap-2">
-                                    <Percent size={18} /> PROMOCIONES
-                                </Link>
-                            </div>
-                        </motion.div>
-                    </div>
+                <div className="container relative z-20 px-6 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1.5, ease: "circOut" }}
+                    >
+                        <span className="text-gold text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">Trujillo • Est. 2024</span>
+                        <h1 className="text-7xl md:text-9xl font-serif mb-8 leading-tight">
+                            Ferest <span className="italic block md:inline font-light opacity-80">Premium</span>
+                        </h1>
+                        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light tracking-wide italic">
+                            Elevando el arte de la coctelería y los licores finos en la ciudad de la eterna primavera.
+                        </p>
+                        <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+                            <Link to="/catalog" className="btn-premium min-w-[240px]">
+                                Ver Colección
+                            </Link>
+                            <Link to="/contact" className="text-[10px] font-bold tracking-[0.3em] uppercase hover:text-[#c5a059] transition-colors">
+                                Reservas de Eventos
+                            </Link>
+                        </div>
+                    </motion.div>
+                </div>
+
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+                    <div className="w-[1px] h-20 bg-gradient-to-b from-transparent via-[#c5a059] to-transparent"></div>
                 </div>
             </section>
 
-            {/* Promotions Section */}
-            <section id="promociones" className="py-24 bg-[#0a0a0a]">
-                <div className="container mx-auto px-4">
-                    <div className="flex items-center gap-4 mb-12">
-                        <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
-                            <Award size={24} />
+            {/* Quality Commitment - Minimalist */}
+            <section className="py-24 border-y border-white/5 bg-[#080808]">
+                <div className="container mx-auto px-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
+                        <div className="space-y-4">
+                            <ShieldCheck className="mx-auto text-[#c5a059]/50" size={32} strokeWidth={1} />
+                            <h3 className="text-sm font-bold tracking-widest uppercase">Autenticidad</h3>
+                            <p className="text-xs text-gray-500 leading-relaxed font-light">Garantía de origen en cada botella de nuestra exclusiva cava.</p>
                         </div>
-                        <div>
-                            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Ofertas <span className="text-red-500">Exclusivas</span></h2>
-                            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Lo mejor al mejor precio</p>
+                        <div className="space-y-4">
+                            <Clock className="mx-auto text-[#c5a059]/50" size={32} strokeWidth={1} />
+                            <h3 className="text-sm font-bold tracking-widest uppercase">Servicio VIP</h3>
+                            <p className="text-xs text-gray-500 leading-relaxed font-light">Delivery especializado en menos de 45 minutos en todo Trujillo.</p>
                         </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {promotions.length > 0 ? (
-                            promotions.map(promo => (
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    key={promo.id}
-                                    className="relative h-64 rounded-[2.5rem] overflow-hidden group shadow-2xl border border-white/5"
-                                >
-                                    <img src={promo.image_url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-10 flex flex-col justify-end">
-                                        <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full w-fit mb-4 tracking-widest">-{promo.discount_percent}% OFF</span>
-                                        <h3 className="text-3xl font-black italic text-white mb-2 uppercase">{promo.title}</h3>
-                                        <p className="text-gray-300 text-sm font-medium italic">{promo.description}</p>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div className="col-span-2 p-20 border-2 border-dashed border-white/5 rounded-[3rem] text-center text-gray-600">
-                                <p className="text-sm font-black uppercase tracking-widest">Próximamente nuevas promociones...</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* Nightclubs Section Preview */}
-            <section className="py-24 bg-gradient-to-b from-[#0a0a0a] to-[#080808] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/10 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                <div className="container mx-auto px-4 relative z-10">
-                    <div className="bg-[#111] rounded-[4rem] border border-white/5 p-12 md:p-20 overflow-hidden relative group hover:border-purple-500/20 transition-all duration-500">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                            <div>
-                                <span className="text-purple-500 font-black text-[10px] tracking-[0.5em] uppercase mb-4 block italic">Nightlife & Events</span>
-                                <h2 className="text-5xl md:text-7xl font-black italic mb-8 uppercase tracking-tighter leading-none">
-                                    Packs para <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-gradient-x">DISCOTECAS</span>
-                                </h2>
-                                <p className="text-gray-400 text-lg mb-12 italic leading-relaxed font-light">
-                                    Abastecemos las mejores barras de Trujillo con precios de distribuidor.
-                                    Packs configurados para eventos de alto impacto y servicio VIP.
-                                </p>
-                                <div className="grid grid-cols-2 gap-8 mb-12">
-                                    <div className="space-y-2">
-                                        <p className="text-white font-black italic flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span> STOCK ILIMITADO
-                                        </p>
-                                        <p className="text-gray-500 text-xs font-bold uppercase">Garantizamos disponibilidad</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-white font-black italic flex items-center gap-2">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span> PRECIO MAYORISTA
-                                        </p>
-                                        <p className="text-gray-500 text-xs font-bold uppercase">A partir de 12 unidades</p>
-                                    </div>
-                                </div>
-                                <Link to="/nightclubs" className="inline-flex items-center gap-3 bg-white text-black px-12 py-5 rounded-2xl font-black text-sm uppercase hover:bg-purple-500 hover:text-white transition-all group shadow-xl shadow-purple-500/10">
-                                    VER PACKS EXCLUSIVOS <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                </Link>
-                            </div>
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl rounded-full scale-110"></div>
-                                <img
-                                    src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&q=80&w=1000"
-                                    alt="Nightclub"
-                                    className="relative z-10 rounded-[3rem] border border-white/10 shadow-3xl hover:scale-[1.02] transition-transform duration-700"
-                                />
-                                <div className="absolute -bottom-6 -right-6 bg-[#d4af37] text-black w-32 h-32 rounded-full flex flex-col items-center justify-center font-black italic text-center leading-tight shadow-2xl z-20 border-4 border-[#111]">
-                                    <span className="text-xs">AHORRA</span>
-                                    <span className="text-3xl">20%</span>
-                                    <span className="text-[10px]">EN PACKS</span>
-                                </div>
-                            </div>
+                        <div className="space-y-4">
+                            <Star className="mx-auto text-[#c5a059]/50" size={32} strokeWidth={1} />
+                            <h3 className="text-sm font-bold tracking-widest uppercase">Curaduría</h3>
+                            <p className="text-xs text-gray-500 leading-relaxed font-light">Seleccionamos solo lo mejor del mercado global para usted.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Catalog Section */}
-            <section id="catalogo" className="py-24 bg-[#080808] relative">
-                <div className="container mx-auto px-4">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-center md:text-left">
-                        <div className="w-full md:w-auto">
-                            <span className="text-[#d4af37] font-bold tracking-[0.4em] text-[10px] uppercase mb-4 block italic">The Black Collection</span>
-                            <h2 className="text-5xl md:text-6xl font-black text-white italic uppercase tracking-tighter">Nuestra <span className="text-[#d4af37]">Carta</span></h2>
-                        </div>
-                        <div className="flex flex-wrap gap-3 justify-center">
-                            {categories.map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setActiveCategory(cat)}
-                                    className={`px-8 py-3 rounded-2xl text-[10px] font-black tracking-widest uppercase border transition-all ${activeCategory === cat
-                                        ? 'bg-[#d4af37] border-[#d4af37] text-black shadow-[0_0_25px_rgba(212,175,55,0.3)]'
-                                        : 'border-white/10 text-gray-500 hover:border-[#d4af37]/50 hover:text-white hover:bg-white/5'
-                                        }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
+            {/* Featured Collection */}
+            <section className="py-32 container mx-auto px-6">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+                    <div className="max-w-xl">
+                        <h2 className="text-5xl font-serif italic mb-6">Nuestra Selección</h2>
+                        <p className="text-gray-500 text-sm font-light leading-relaxed">Explore nuestra curaduría por categoría. Piezas seleccionadas por su carácter y distinción.</p>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-                        {filteredProducts.map((product) => (
-                            <motion.div layout key={product.id} className="bg-[#111] rounded-[2.5rem] overflow-hidden border border-white/5 hover:border-[#d4af37]/30 transition-all group relative p-2">
-                                <div className="relative h-80 rounded-[2rem] overflow-hidden">
-                                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                    <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                        <span className="bg-black/80 backdrop-blur-md text-[#d4af37] text-[10px] font-black px-4 py-2 rounded-xl border border-[#d4af37]/20 uppercase tracking-tighter">
-                                            {product.category}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="p-8">
-                                    <div className="flex justify-between items-start mb-4 gap-4">
-                                        <h3 className="font-black text-white text-2xl group-hover:text-[#d4af37] transition-colors leading-tight italic uppercase tracking-tighter">{product.name}</h3>
-                                        <div className="text-right shrink-0">
-                                            <span className="text-[#d4af37] font-black text-2xl italic tracking-tighter">S/ {product.price.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-
-                                    {product.wholesale_price && (
-                                        <div className="mb-6 bg-[#d4af37]/5 border border-[#d4af37]/10 rounded-2xl p-3 flex items-center justify-between">
-                                            <div className="flex flex-col">
-                                                <span className="text-green-500 text-[9px] font-black uppercase tracking-widest">P. Mayorista</span>
-                                                <span className="text-white font-black text-lg">S/ {product.wholesale_price.toFixed(2)}</span>
-                                            </div>
-                                            <span className="text-[9px] text-gray-500 font-bold uppercase italic text-right">Min: {product.wholesale_min} units</span>
-                                        </div>
-                                    )}
-
-                                    <p className="text-gray-500 text-xs mb-8 line-clamp-2 italic font-medium leading-relaxed">"{product.description}"</p>
-
-                                    <button
-                                        onClick={() => handleAddToCart(product)}
-                                        className="w-full btn-premium py-5 flex items-center justify-center gap-3 active:scale-95"
-                                    >
-                                        <ShoppingBag size={18} /> AGREGAR AL CARRITO
-                                    </button>
-                                </div>
-                            </motion.div>
+                    <div className="flex flex-wrap gap-4 overflow-x-auto pb-4 md:pb-0">
+                        {categories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`text-[10px] font-bold tracking-[0.2em] uppercase px-6 py-3 border transition-all duration-500 ${activeCategory === cat ? 'border-[#c5a059] text-[#c5a059]' : 'border-white/5 text-gray-600 hover:text-white'}`}
+                            >
+                                {cat}
+                            </button>
                         ))}
                     </div>
                 </div>
-            </section>
 
-            {/* Testimonials/Reviews */}
-            <section className="py-24 bg-[#0a0a0a]">
-                <div className="container mx-auto px-4 text-center">
-                    <span className="text-[#d4af37] font-black text-[10px] tracking-[0.5em] uppercase mb-4 block italic">Experiencias Reales</span>
-                    <h2 className="text-4xl font-black italic mb-16 uppercase tracking-tighter">Lo que dicen <span className="text-[#d4af37]">Nuestros Clientes</span></h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                        {reviews.length > 0 ? (
-                            reviews.map(review => (
-                                <div key={review.id} className="bg-[#111] p-10 rounded-[2.5rem] border border-white/5 relative group">
-                                    <div className="flex gap-1 text-[#d4af37] mb-6">
-                                        {[...Array(review.rating)].map((_, i) => <Star key={i} size={14} fill="#d4af37" />)}
-                                    </div>
-                                    <p className="text-gray-400 italic mb-8 leading-relaxed font-medium">"{review.comment}"</p>
-                                    <div className="flex items-center gap-4 border-t border-white/5 pt-6">
-                                        {review.user_avatar ? (
-                                            <img src={review.user_avatar} className="w-12 h-12 rounded-full border-2 border-[#d4af37]/30" />
-                                        ) : (
-                                            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-black text-[#d4af37]">{review.user_name?.charAt(0)}</div>
-                                        )}
-                                        <div>
-                                            <p className="text-white font-black text-sm uppercase italic">{review.user_name}</p>
-                                            <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black">Cliente Premium</p>
-                                        </div>
-                                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+                    {filteredProducts.slice(0, 8).map((product) => (
+                        <div key={product.id} className="reveal group">
+                            <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-[#0f0f0f]">
+                                <img
+                                    src={product.image_url}
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 pointer-events-none"
+                                />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center">
+                                    <button
+                                        onClick={() => handleAddToCart(product)}
+                                        className="bg-white text-black px-8 py-3 text-[10px] font-bold tracking-widest uppercase hover:bg-[#c5a059] hover:text-white transition-colors"
+                                    >
+                                        Añadir al Carrito
+                                    </button>
                                 </div>
-                            ))
-                        ) : (
-                            <div className="col-span-3 py-16 text-gray-600 italic uppercase text-xs font-black tracking-widest">Aún no hay reseñas. ¡Sé el primero en dejar una!</div>
-                        )}
-                    </div>
+                            </div>
+                            <h3 className="font-serif text-xl mb-2 text-white/90 group-hover:text-[#c5a059] transition-colors">{product.name}</h3>
+                            <div className="flex justify-between items-center border-t border-white/5 pt-4">
+                                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">{product.category}</span>
+                                <span className="text-lg font-light text-[#c5a059]">S/ {product.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* Contact Form */}
-            <section id="contacto" className="py-24 bg-[#080808]">
-                <div className="container mx-auto px-4 max-w-6xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 bg-[#111] rounded-[4rem] border border-white/5 p-12 md:p-20 shadow-3xl">
+            {/* Experiences / Contact */}
+            <section className="py-32 bg-[#080808] border-t border-white/5">
+                <div className="container mx-auto px-6">
+                    <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24">
                         <div>
-                            <span className="text-[#d4af37] font-black text-[10px] tracking-[0.5em] uppercase mb-4 block italic">Direct Support</span>
-                            <h2 className="text-5xl font-black italic mb-8 uppercase tracking-tighter">Hablemos de <span className="text-[#d4af37]">Negocios</span></h2>
-                            <p className="text-gray-400 mb-12 italic leading-relaxed text-lg font-medium">
-                                ¿Deseas un pedido para un evento especial o consulta mayorista? Contáctanos directamente y nuestro sommelier te asesorará.
-                            </p>
-
-                            <div className="space-y-8">
-                                <div className="flex items-center gap-6 group">
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-white/5 flex items-center justify-center text-[#d4af37] border border-white/5 group-hover:border-[#d4af37]/30 transition-all">
-                                        <Mail size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">E-mail VIP</p>
-                                        <p className="text-white font-black italic text-lg">leninzumaran0@gmail.com</p>
-                                    </div>
+                            <h2 className="text-5xl font-serif italic mb-8">Hablemos de <br /><span className="text-[#c5a059] not-italic">Momentos.</span></h2>
+                            <p className="text-gray-400 font-light mb-12 text-lg">Para consultas corporativas, suministros para bares o pedidos especiales.</p>
+                            <div className="space-y-6">
+                                <a href="mailto:info@ferest.pe" className="flex items-center gap-4 group">
+                                    <Mail className="text-[#c5a059]/50 group-hover:text-[#c5a059] transition-colors" size={20} />
+                                    <span className="text-sm border-b border-transparent group-hover:border-[#c5a059] transition-all">leninzumaran0@gmail.com</span>
+                                </a>
+                                <div className="flex items-center gap-4">
+                                    <Phone className="text-[#c5a059]/50" size={20} />
+                                    <span className="text-sm font-light">+51 901 296 314</span>
                                 </div>
-                                <div className="flex items-center gap-6 group">
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-white/5 flex items-center justify-center text-[#d4af37] border border-white/5 group-hover:border-[#d4af37]/30 transition-all">
-                                        <Phone size={24} />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">WhatsApp Directo</p>
-                                        <p className="text-white font-black italic text-lg">+51 901 296 314</p>
-                                    </div>
+                                <div className="flex items-center gap-4">
+                                    <MapPin className="text-[#c5a059]/50" size={20} />
+                                    <span className="text-sm font-light italic">Showroom: Trujillo, Perú</span>
                                 </div>
                             </div>
                         </div>
-
-                        <form onSubmit={handleContactSubmit} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4 italic">Nombre Completo</label>
-                                    <input
-                                        type="text" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold italic"
-                                        placeholder="Tu nombre..."
-                                        value={contactForm.name}
-                                        onChange={e => setContactForm({ ...contactForm, name: e.target.value })}
-                                    />
+                        <div className="p-10 border border-white/5 bg-[#0f0f0f] rounded-lg">
+                            <form className="space-y-8">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Nombre</label>
+                                    <input className="w-full bg-transparent border-b border-white/10 py-3 focus:border-[#c5a059] outline-none transition-colors font-light" />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4 italic">Correo Electrónico</label>
-                                    <input
-                                        type="email" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold italic"
-                                        placeholder="tu@email.com"
-                                        value={contactForm.email}
-                                        onChange={e => setContactForm({ ...contactForm, email: e.target.value })}
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Mensaje</label>
+                                    <textarea className="w-full bg-transparent border-b border-white/10 py-3 focus:border-[#c5a059] outline-none transition-colors resize-none h-32 font-light" />
                                 </div>
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-4 italic">Tu Mensaje</label>
-                                <textarea
-                                    className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] px-8 py-6 text-sm focus:border-[#d4af37] outline-none transition-all h-48 resize-none font-bold italic"
-                                    placeholder="¿En qué podemos ayudarte hoy?"
-                                    value={contactForm.message}
-                                    onChange={e => setContactForm({ ...contactForm, message: e.target.value })}
-                                ></textarea>
-                            </div>
-                            <button className="w-full btn-premium py-6 flex items-center justify-center gap-3 italic font-black text-sm uppercase group">
-                                <Send size={20} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> ENVIAR MENSAJE
-                            </button>
-                        </form>
+                                <button className="btn-premium w-full">Enviar Consulta</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </section>

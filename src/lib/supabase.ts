@@ -1,21 +1,21 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Intentamos capturar las variables de entorno, con fallbacks de seguridad.
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Si faltan las variables, usamos un proyecto placeholder para que createClient no falle catastróficamente
-const finalUrl = supabaseUrl.startsWith('http') ? supabaseUrl : 'https://placeholder-project.supabase.co';
-const finalKey = supabaseAnonKey.length > 20 ? supabaseAnonKey : 'placeholder-key-0000000000000000000';
+// No usamos placeholders que causen 'Failed to fetch' si las variables no existen.
+// En su lugar, validamos antes de inicializar.
+const isValidConfig = supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http');
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('FEREST: Supabase credentials missing. App running in restricted mode.');
-}
-
-export const supabase = createClient(finalUrl, finalKey, {
-    auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
+export const supabase = createClient(
+    isValidConfig ? supabaseUrl : 'https://missing-config.supabase.co',
+    isValidConfig ? supabaseAnonKey : 'missing-key',
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true
+        }
     }
-});
+);
+
+export const checkConnection = () => isValidConfig;

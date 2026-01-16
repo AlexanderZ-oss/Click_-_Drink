@@ -1,22 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { ShoppingCart, Search, Filter } from 'lucide-react';
+import { ShoppingBag, Search, Filter } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { motion } from 'framer-motion';
-
-interface Product {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    category: string;
-    image_url: string;
-    stock: number;
-}
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Catalog() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const { addToCart } = useCart();
@@ -26,150 +16,97 @@ export default function Catalog() {
     }, []);
 
     useEffect(() => {
-        filterProducts();
-    }, [selectedCategory, searchTerm, products]);
-
-    const fetchProducts = async () => {
-        const { data, error } = await supabase
-            .from('products')
-            .select('*')
-            .eq('active', true)
-            .order('name');
-
-        if (!error && data) {
-            setProducts(data);
-        }
-    };
-
-    const filterProducts = () => {
         let filtered = products;
-
         if (selectedCategory !== 'all') {
             filtered = filtered.filter(p => p.category === selectedCategory);
         }
-
         if (searchTerm) {
             filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                p.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-
         setFilteredProducts(filtered);
+    }, [selectedCategory, searchTerm, products]);
+
+    const fetchProducts = async () => {
+        const { data } = await supabase.from('products').select('*').eq('active', true).order('name');
+        if (data) setProducts(data);
     };
 
     const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
 
     return (
-        <div className="min-h-screen pt-32 pb-20 bg-[#0a0a0a]">
-            <div className="container mx-auto px-4">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-16"
-                >
-                    <h1 className="text-6xl font-black italic uppercase mb-4">
-                        Nuestro <span className="text-[#d4af37]">Catálogo</span>
-                    </h1>
-                    <p className="text-gray-400 text-lg">Descubre nuestra selección premium de bebidas</p>
-                </motion.div>
+        <div className="min-h-screen bg-[#050505] pt-40 pb-32">
+            <div className="container mx-auto px-6">
+                <div className="max-w-4xl mx-auto text-center mb-24 reveal">
+                    <span className="text-[#c5a059] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block font-sans">Elegancia Líquida</span>
+                    <h1 className="text-6xl font-serif italic mb-8">Nuestra <span className="text-[#c5a059] not-italic">Reserva</span></h1>
+                    <p className="text-gray-500 font-light tracking-wide italic">Una selección exhaustiva de los licores más distinguidos del mundo, listos para su paladar.</p>
+                </div>
 
-                {/* Search and Filter */}
-                <div className="mb-12 flex flex-col md:flex-row gap-4">
-                    {/* Search */}
-                    <div className="flex-1 relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Buscar productos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#d4af37] transition-all"
-                        />
-                    </div>
-
-                    {/* Category Filter */}
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                        {categories.map(category => (
+                {/* Filters */}
+                <div className="mb-20 flex flex-col md:flex-row gap-12 items-center justify-between border-y border-white/5 py-10">
+                    <div className="flex gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 no-scrollbar">
+                        {categories.map(cat => (
                             <button
-                                key={category}
-                                onClick={() => setSelectedCategory(category)}
-                                className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${selectedCategory === category
-                                        ? 'bg-[#d4af37] text-black'
-                                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                                    }`}
+                                key={cat}
+                                onClick={() => setSelectedCategory(cat)}
+                                className={`text-[9px] font-bold tracking-[0.3em] uppercase transition-all whitespace-nowrap ${selectedCategory === cat ? 'text-[#c5a059]' : 'text-gray-600 hover:text-white'}`}
                             >
-                                {category === 'all' ? 'Todos' : category}
+                                {cat === 'all' ? 'Toda la Cava' : cat}
                             </button>
                         ))}
                     </div>
+                    <div className="relative w-full md:w-64 group">
+                        <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-[#c5a059] transition-colors" size={16} />
+                        <input
+                            type="text"
+                            placeholder="Buscar pieza..."
+                            className="bg-transparent border-b border-white/10 w-full pl-8 py-2 text-xs font-light outline-none focus:border-[#c5a059] transition-all"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
 
-                {/* Products Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {filteredProducts.map((product, index) => (
+                {/* Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-20">
+                    {filteredProducts.map((product) => (
                         <motion.div
                             key={product.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="group bg-white/5 rounded-3xl overflow-hidden border border-white/10 hover:border-[#d4af37]/50 transition-all hover:shadow-2xl hover:shadow-[#d4af37]/20"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            className="group"
                         >
-                            {/* Image */}
-                            <div className="relative h-64 overflow-hidden bg-black/40">
+                            <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-8">
                                 <img
                                     src={product.image_url}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
                                 />
-                                {product.stock < 10 && product.stock > 0 && (
-                                    <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-black">
-                                        ¡Últimas unidades!
-                                    </div>
-                                )}
                                 {product.stock === 0 && (
-                                    <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                                        <span className="text-white font-black text-xl">AGOTADO</span>
+                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                                        <span className="text-[10px] font-bold tracking-[0.5em] uppercase text-white border border-white/20 px-6 py-2">Agotado</span>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-6">
-                                <div className="mb-3">
-                                    <span className="text-xs font-black text-[#d4af37] uppercase tracking-wider">
-                                        {product.category}
-                                    </span>
-                                </div>
-                                <h3 className="text-xl font-black italic text-white mb-2">{product.name}</h3>
-                                <p className="text-gray-400 text-sm mb-4 line-clamp-2">{product.description}</p>
-
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <span className="text-3xl font-black italic text-white">
-                                            S/ {product.price.toFixed(2)}
-                                        </span>
-                                    </div>
+                                <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-black to-transparent">
                                     <button
                                         onClick={() => addToCart(product)}
                                         disabled={product.stock === 0}
-                                        className="bg-gradient-to-r from-[#d4af37] to-[#f3e5ab] text-black px-6 py-3 rounded-xl font-black text-sm uppercase hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="w-full btn-premium py-4"
                                     >
-                                        <ShoppingCart className="w-4 h-4" />
-                                        Agregar
+                                        Añadir
                                     </button>
                                 </div>
+                            </div>
+                            <div className="space-y-3">
+                                <span className="text-[8px] font-bold tracking-[0.4em] uppercase text-[#c5a059]">{product.category}</span>
+                                <h3 className="text-xl font-serif italic text-white/90">{product.name}</h3>
+                                <p className="text-lg font-light text-gray-400 group-hover:text-[#c5a059] transition-colors">S/ {product.price.toFixed(2)}</p>
                             </div>
                         </motion.div>
                     ))}
                 </div>
-
-                {filteredProducts.length === 0 && (
-                    <div className="text-center py-20">
-                        <p className="text-gray-500 text-xl font-bold">No se encontraron productos</p>
-                    </div>
-                )}
             </div>
         </div>
     );
