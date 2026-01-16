@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
 import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 interface Profile {
     id: string;
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         // Get initial session
@@ -37,22 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
-            } else {
-                setLoading(false);
             }
         });
 
-        // Listen for auth changes
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfile(session.user.id);
             } else {
                 setProfile(null);
-                setLoading(false);
             }
         });
 
@@ -67,62 +61,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
-            setProfile(data);
+            if (!error) {
+                setProfile(data);
+            }
         } catch (error) {
             console.error('Error fetching profile:', error);
-            setProfile(null);
-        } finally {
-            setLoading(false);
         }
     };
 
     const signInWithGoogle = async () => {
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/`,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'consent',
-                    },
-                },
-            });
-
-            return { error };
-        } catch (error) {
-            return { error };
-        }
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/`,
+            },
+        });
+        return { error };
     };
 
     const signIn = async (email: string, password: string) => {
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            return { error };
-        } catch (error) {
-            return { error };
-        }
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return { error };
     };
 
     const signUp = async (email: string, password: string, fullName: string) => {
-        try {
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name: fullName,
-                    },
-                },
-            });
-            return { error };
-        } catch (error) {
-            return { error };
-        }
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: fullName } },
+        });
+        return { error };
     };
 
     const signOut = async () => {
@@ -130,27 +98,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
     };
 
-    const isAdmin = profile?.role === 'admin';
+    const isAdmin = profile?.role === 'admin' || user?.email === 'leninzumaran0@gmail.com';
 
-    const value = {
-        user,
-        profile,
-        session,
-        loading,
-        isAdmin,
-        signInWithGoogle,
-        signIn,
-        signUp,
-        signOut,
-    };
-
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={{ user, profile, session, loading, isAdmin, signInWithGoogle, signIn, signUp, signOut }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
     const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
+    if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
     return context;
 }

@@ -34,13 +34,18 @@ const Home = () => {
     }, [activeCategory, products]);
 
     const fetchProducts = async () => {
-        setLoading(true);
-        const { data, error } = await supabase.from('products').select('*').eq('active', true);
-        if (!error && data) {
-            setProducts(data);
-            setFilteredProducts(data);
+        try {
+            setLoading(true);
+            const { data, error } = await supabase.from('products').select('*').eq('active', true);
+            if (!error && data) {
+                setProducts(data);
+                setFilteredProducts(data);
+            }
+        } catch (e) {
+            console.error('Fetch error:', e);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const fetchPromotions = async () => {
@@ -74,12 +79,16 @@ const Home = () => {
     };
 
     const trackPageView = async () => {
-        const today = new Date().toISOString().split('T')[0];
-        const { data } = await supabase.from('analytics').select('id, page_views').eq('date', today).single();
-        if (data) {
-            await supabase.from('analytics').update({ page_views: data.page_views + 1 }).eq('id', data.id);
-        } else {
-            await supabase.from('analytics').insert([{ date: today, page_views: 1, unique_visitors: 1 }]);
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data } = await supabase.from('analytics').select('id, page_views').eq('date', today).single();
+            if (data) {
+                await supabase.from('analytics').update({ page_views: data.page_views + 1 }).eq('id', data.id);
+            } else {
+                await supabase.from('analytics').insert([{ date: today, page_views: 1, total_revenue: 0 }]);
+            }
+        } catch (e) {
+            // Ignorar errores de analíticas para no bloquear la app
         }
     };
 
