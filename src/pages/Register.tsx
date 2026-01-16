@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, Phone, CheckCircle } from 'lucide-react';
+import { Mail, Lock, User, CheckCircle, FileText } from 'lucide-react';
 
 const Register = () => {
     const [fullName, setFullName] = useState('');
@@ -16,6 +16,13 @@ const Register = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Patch: Validar que el correo termine en .com
+        if (!email.toLowerCase().endsWith('.com')) {
+            setError('Por seguridad, solo se permiten correos electrónicos válidos que terminen en .com');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -27,7 +34,6 @@ const Register = () => {
         } else {
             setSuccess(true);
             setLoading(false);
-            // Redirección después de unos segundos para que lean el mensaje de bienvenida
             setTimeout(() => navigate('/login'), 5000);
         }
     };
@@ -48,7 +54,9 @@ const Register = () => {
                             "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span> y a nuestra comunidad de licores selectos."
                         </p>
                         <p className="text-sm italic text-gray-500">
-                            Recibirás un correo electrónico de confirmación en breve con los detalles de tu membresía.
+                            Recibirás un correo electrónico de confirmación con los detalles de tu membresía.
+                            <br />
+                            <span className="text-[#c5a059] font-bold uppercase mt-2 block tracking-widest text-[10px]">Las facturas de tus compras serán enviadas a este correo.</span>
                         </p>
                     </div>
                     <button onClick={() => navigate('/login')} className="btn-premium mt-12 w-full">Ir al Ingreso</button>
@@ -86,7 +94,7 @@ const Register = () => {
                         <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest ml-1">Correo Electrónico</label>
                         <div className="relative group">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-[#c5a059] transition-colors" size={16} />
-                            <input required type="email" className="w-full pl-12 bg-white/5 border border-white/10 py-4 focus:border-[#c5a059] transition-all outline-none text-white font-light text-sm" placeholder="juan@ejemplo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input required type="email" className="w-full pl-12 bg-white/5 border border-white/10 py-4 focus:border-[#c5a059] transition-all outline-none text-white font-light text-sm" placeholder="usuario@ejemplo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
                     </div>
 
@@ -96,6 +104,13 @@ const Register = () => {
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-[#c5a059] transition-colors" size={16} />
                             <input required type="password" title="Mínimo 6 caracteres" className="w-full pl-12 bg-white/5 border border-white/10 py-4 focus:border-[#c5a059] transition-all outline-none text-white font-light text-sm" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} />
                         </div>
+                    </div>
+
+                    <div className="bg-[#c5a059]/5 border border-[#c5a059]/10 p-4 rounded flex gap-4 items-start mb-4">
+                        <FileText className="text-[#c5a059] shrink-0" size={18} />
+                        <p className="text-[10px] text-gray-400 leading-relaxed uppercase tracking-wider font-bold">
+                            Nota: La factura de su compra será enviada automáticamente al correo electrónico registrado.
+                        </p>
                     </div>
 
                     <button disabled={loading} type="submit" className="w-full btn-premium py-5 mt-4">
@@ -112,3 +127,4 @@ const Register = () => {
 };
 
 export default Register;
+
