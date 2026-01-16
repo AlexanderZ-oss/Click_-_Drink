@@ -12,6 +12,7 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Events from './pages/Events';
+import Debug from './pages/Debug';
 import { Toaster } from './components/ui/Toaster';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -39,6 +40,7 @@ function App() {
                                     <Route path="/login" element={<Login />} />
                                     <Route path="/register" element={<Register />} />
                                     <Route path="/admin" element={<Admin />} />
+                                    <Route path="/debug" element={<Debug />} />
                                 </Routes>
                             </main>
                             <Footer />

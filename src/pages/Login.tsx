@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { getSupabaseStatus } from '../lib/supabase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,9 +12,16 @@ const Login = () => {
     const [error, setError] = useState<string | null>(null);
     const { signIn } = useAuth();
     const navigate = useNavigate();
+    const status = getSupabaseStatus();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!status.isReady) {
+            setError('Error de Sistema: Las llaves de conexión no están configuradas en el servidor.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -35,6 +43,16 @@ const Login = () => {
                     <h1 className="text-5xl font-serif text-white mb-4">Ingreso</h1>
                     <p className="text-gray-500 font-light uppercase tracking-widest text-[10px]">Acceso Seguro al Sistema</p>
                 </div>
+
+                {!status.isReady && (
+                    <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded mb-8 flex gap-4 items-start">
+                        <AlertTriangle className="text-amber-500 shrink-0" size={20} />
+                        <div>
+                            <p className="text-amber-200 text-[10px] font-bold uppercase tracking-widest mb-1">Sin Conexión a Base de Datos</p>
+                            <p className="text-amber-200/60 text-[10px] leading-relaxed">Las llaves de Supabase no han sido detectadas. Ve a <Link to="/debug" className="underline text-amber-500">Diagnóstico</Link> para más detalles.</p>
+                        </div>
+                    </div>
+                )}
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 mb-8 text-[11px] font-bold uppercase tracking-widest text-center">
