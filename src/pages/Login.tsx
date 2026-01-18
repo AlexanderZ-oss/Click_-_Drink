@@ -36,7 +36,7 @@ const Login = () => {
             const userId = data.user?.id;
             if (userId) {
                 // Check if admin by email
-                if (data.user.email === 'leninzumaran0@gmail.com') {
+                if (data.user.email === 'leninzumaran9@gmail.com') {
                     navigate('/admin');
                     return;
                 }
@@ -51,10 +51,10 @@ const Login = () => {
                 if (profile?.role === 'admin') {
                     navigate('/admin');
                 } else {
-                    navigate('/'); // Or /cart if preferred? User said "continue with purchase", letting them go to home or cart is fine.
+                    navigate('/cart');
                 }
             } else {
-                navigate('/');
+                navigate('/cart');
             }
         }
     };

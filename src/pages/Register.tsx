@@ -38,7 +38,7 @@ const Register = () => {
 
             // If session exists (auto-confirmed or no confirm needed), redirect to home quickly
             if (data?.session) {
-                setTimeout(() => navigate('/'), 1500);
+                setTimeout(() => navigate('/cart'), 1500);
             } else {
                 // If confirmation needed
                 setTimeout(() => navigate('/login'), 5000);
@@ -61,9 +61,12 @@ const Register = () => {
                         <p className="border-y border-white/5 py-6">
                             "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span>."
                         </p>
+                        <p className="text-sm italic text-green-500">
+                            Se ha enviado un mensaje de bienvenida a tu correo.
+                        </p>
                     </div>
-                    <button onClick={() => navigate('/')} className="btn-premium mt-12 w-full">Continuar Comprando</button>
-                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">Redirigiendo...</p>
+                    <button onClick={() => navigate('/cart')} className="btn-premium mt-12 w-full">CONTINUAR AL PAGO</button>
+                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">Redirigiendo al pago...</p>
                 </motion.div>
             </div>
         );
