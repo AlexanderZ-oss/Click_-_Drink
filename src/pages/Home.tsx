@@ -57,10 +57,10 @@ const Home = () => {
                 <div className="container relative z-20 px-8 text-center">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
                         <span className="text-[#c5a059] text-[10px] font-bold tracking-[0.6em] uppercase mb-6 block">Trujillo • Perú</span>
-                        <h1 className="text-7xl md:text-9xl font-serif mb-8 tracking-tight">
+                        <h1 className="text-5xl md:text-9xl font-serif mb-8 tracking-tight">
                             FEREST
                         </h1>
-                        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light tracking-widest uppercase text-[12px]">
+                        <p className="text-gray-400 text-sm md:text-xl max-w-2xl mx-auto mb-12 font-light tracking-widest uppercase text-[10px] md:text-[12px]">
                             Licores seleccionados y experiencias exclusivas.
                         </p>
                         <div className="flex gap-6 justify-center">
@@ -71,8 +71,8 @@ const Home = () => {
             </section>
 
             {/* Categorías - Ordenadas */}
-            <section className="py-24 container mx-auto px-8 border-b border-white/5">
-                <div className="flex justify-center flex-wrap gap-8">
+            <section className="py-12 md:py-24 container mx-auto px-4 md:px-8 border-b border-white/5">
+                <div className="flex justify-center flex-wrap gap-4 md:gap-8">
                     {categories.map(cat => (
                         <button
                             key={cat}
@@ -86,20 +86,20 @@ const Home = () => {
             </section>
 
             {/* Grid de Productos - Muy ordenado */}
-            <section className="py-32 container mx-auto px-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+            <section className="py-16 md:py-32 container mx-auto px-4 md:px-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-12">
                     {filteredProducts.slice(0, 8).map((product) => (
                         <div key={product.id} className="group">
-                            <div className="relative aspect-[3/4] overflow-hidden mb-6 bg-[#0f0f0f] border border-white/5 rounded-sm">
+                            <div className="relative aspect-[3/4] overflow-hidden mb-4 md:mb-6 bg-[#0f0f0f] border border-white/5 rounded-sm">
                                 <img src={product.image_url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt={product.name} />
-                                <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-all">
-                                    <button onClick={() => addToCart(product)} className="w-full btn-premium py-3 text-[9px]">AÑADIR</button>
+                                <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
+                                    <button onClick={() => addToCart(product)} className="w-full btn-premium py-2 md:py-3 text-[8px] md:text-[9px]">AÑADIR</button>
                                 </div>
                             </div>
-                            <h3 className="font-serif text-lg text-white mb-2 uppercase tracking-wide">{product.name}</h3>
-                            <div className="flex justify-between items-center border-t border-white/5 pt-4">
-                                <span className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">{product.category}</span>
-                                <span className="text-md font-medium text-[#c5a059]">S/ {product.price.toFixed(2)}</span>
+                            <h3 className="font-serif text-sm md:text-lg text-white mb-1 md:mb-2 uppercase tracking-wide truncate">{product.name}</h3>
+                            <div className="flex flex-col md:flex-row md:justify-between md:items-center border-t border-white/5 pt-2 md:pt-4">
+                                <span className="text-[7px] md:text-[9px] text-gray-500 uppercase font-bold tracking-widest">{product.category}</span>
+                                <span className="text-sm md:text-md font-medium text-[#c5a059]">S/ {product.price.toFixed(2)}</span>
                             </div>
                         </div>
                     ))}

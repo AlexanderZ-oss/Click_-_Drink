@@ -23,10 +23,10 @@ export default function Events() {
     return (
         <div className="min-h-screen bg-[#050505] pt-40 pb-32">
             <div className="container mx-auto px-6">
-                <div className="max-w-4xl mx-auto text-center mb-32 reveal">
+                <div className="max-w-4xl mx-auto text-center mb-16 md:mb-32 reveal px-4">
                     <span className="text-[#c5a059] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block">Trujillo Exclusive</span>
-                    <h1 className="text-6xl md:text-8xl font-serif italic mb-8 text-white">Próximos <span className="text-[#c5a059] not-italic">Eventos</span></h1>
-                    <p className="text-gray-500 font-light tracking-wide italic max-w-2xl mx-auto">
+                    <h1 className="text-4xl md:text-8xl font-serif italic mb-8 text-white">Próximos <span className="text-[#c5a059] not-italic">Eventos</span></h1>
+                    <p className="text-gray-500 font-light tracking-wide italic max-w-2xl mx-auto text-sm md:text-base">
                         Descubra la agenda más selecta de la ciudad. Experiencias diseñadas para aquellos que buscan distinción y exclusividad.
                     </p>
                 </div>
@@ -34,7 +34,7 @@ export default function Events() {
                 {loading ? (
                     <div className="text-center py-20 text-[#c5a059] font-bold tracking-widest uppercase text-[10px]">Cargando Agenda...</div>
                 ) : events.length > 0 ? (
-                    <div className="space-y-40">
+                    <div className="space-y-20 md:space-y-40">
                         {events.map((event, index) => (
                             <motion.div
                                 key={event.id}
@@ -60,7 +60,7 @@ export default function Events() {
                                         </span>
                                     </div>
 
-                                    <h2 className="text-5xl md:text-6xl font-serif text-white leading-tight italic">{event.title}</h2>
+                                    <h2 className="text-3xl md:text-6xl font-serif text-white leading-tight italic">{event.title}</h2>
 
                                     <p className="text-gray-400 font-light text-lg leading-relaxed italic">
                                         "{event.description}"

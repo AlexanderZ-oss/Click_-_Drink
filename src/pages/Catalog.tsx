@@ -38,31 +38,31 @@ export default function Catalog() {
     return (
         <div className="min-h-screen bg-[#050505] pt-40 pb-32">
             <div className="container mx-auto px-6">
-                <div className="max-w-4xl mx-auto text-center mb-24 reveal">
-                    <span className="text-[#c5a059] text-[10px] font-bold tracking-[0.5em] uppercase mb-6 block font-sans">Elegancia Líquida</span>
-                    <h1 className="text-6xl font-serif italic mb-8">Nuestra <span className="text-[#c5a059] not-italic">Reserva</span></h1>
-                    <p className="text-gray-500 font-light tracking-wide italic">Una selección exhaustiva de los licores más distinguidos del mundo, listos para su paladar.</p>
+                <div className="max-w-4xl mx-auto text-center mb-12 md:mb-24 reveal px-4">
+                    <span className="text-[#c5a059] text-[10px] font-bold tracking-[0.5em] uppercase mb-4 md:mb-6 block font-sans">Elegancia Líquida</span>
+                    <h1 className="text-4xl md:text-6xl font-serif italic mb-6 md:mb-8">Nuestra <span className="text-[#c5a059] not-italic">Reserva</span></h1>
+                    <p className="text-gray-500 text-sm md:text-base font-light tracking-wide italic">Una selección exhaustiva de los licores más distinguidos del mundo, listos para su paladar.</p>
                 </div>
 
                 {/* Filters */}
-                <div className="mb-20 flex flex-col md:flex-row gap-12 items-center justify-between border-y border-white/5 py-10">
-                    <div className="flex gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 no-scrollbar">
+                <div className="mb-12 md:mb-20 flex flex-col md:flex-row gap-8 md:gap-12 items-center justify-between border-y border-white/5 py-6 md:py-10 px-4">
+                    <div className="flex gap-6 md:gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 no-scrollbar">
                         {categories.map(cat => (
                             <button
                                 key={cat}
                                 onClick={() => setSelectedCategory(cat)}
-                                className={`text-[9px] font-bold tracking-[0.3em] uppercase transition-all whitespace-nowrap ${selectedCategory === cat ? 'text-[#c5a059]' : 'text-gray-600 hover:text-white'}`}
+                                className={`text-[8px] md:text-[9px] font-bold tracking-[0.3em] uppercase transition-all whitespace-nowrap ${selectedCategory === cat ? 'text-[#c5a059]' : 'text-gray-600 hover:text-white'}`}
                             >
                                 {cat === 'all' ? 'Toda la Cava' : cat}
                             </button>
                         ))}
                     </div>
                     <div className="relative w-full md:w-64 group">
-                        <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-[#c5a059] transition-colors" size={16} />
+                        <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-700 group-focus-within:text-[#c5a059] transition-colors" size={14} />
                         <input
                             type="text"
                             placeholder="Buscar pieza..."
-                            className="bg-transparent border-b border-white/10 w-full pl-8 py-2 text-xs font-light outline-none focus:border-[#c5a059] transition-all"
+                            className="bg-transparent border-b border-white/10 w-full pl-8 py-2 text-[10px] md:text-xs font-light outline-none focus:border-[#c5a059] transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -70,7 +70,7 @@ export default function Catalog() {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-20">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-12 gap-y-12 md:gap-y-20 px-4">
                     {filteredProducts.map((product) => (
                         <motion.div
                             key={product.id}
@@ -79,30 +79,30 @@ export default function Catalog() {
                             viewport={{ once: true }}
                             className="group"
                         >
-                            <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-8">
+                            <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-4 md:mb-8">
                                 <img
                                     src={product.image_url}
                                     className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
                                 />
                                 {product.stock === 0 && (
                                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                                        <span className="text-[10px] font-bold tracking-[0.5em] uppercase text-white border border-white/20 px-6 py-2">Agotado</span>
+                                        <span className="text-[8px] md:text-[10px] font-bold tracking-[0.3em] md:tracking-[0.5em] uppercase text-white border border-white/20 px-4 py-1 md:px-6 md:py-2">Agotado</span>
                                     </div>
                                 )}
-                                <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-black to-transparent">
+                                <div className="absolute inset-x-0 bottom-0 p-2 md:p-6 md:translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-gradient-to-t from-black to-transparent">
                                     <button
                                         onClick={() => addToCart(product)}
                                         disabled={product.stock === 0}
-                                        className="w-full btn-premium py-4"
+                                        className="w-full btn-premium py-2 md:py-4 text-[9px] md:text-sm"
                                     >
                                         Añadir
                                     </button>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <span className="text-[8px] font-bold tracking-[0.4em] uppercase text-[#c5a059]">{product.category}</span>
-                                <h3 className="text-xl font-serif italic text-white/90">{product.name}</h3>
-                                <p className="text-lg font-light text-gray-400 group-hover:text-[#c5a059] transition-colors">S/ {product.price.toFixed(2)}</p>
+                            <div className="space-y-1 md:space-y-3">
+                                <span className="text-[7px] md:text-[8px] font-bold tracking-[0.3em] md:tracking-[0.4em] uppercase text-[#c5a059]">{product.category}</span>
+                                <h3 className="text-sm md:text-xl font-serif italic text-white/90 truncate">{product.name}</h3>
+                                <p className="text-md md:text-lg font-light text-gray-400 group-hover:text-[#c5a059] transition-colors">S/ {product.price.toFixed(2)}</p>
                             </div>
                         </motion.div>
                     ))}

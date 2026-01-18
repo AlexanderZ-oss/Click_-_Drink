@@ -7,7 +7,7 @@ const SYS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsIn
 const supabase = createClient(SYS_URL, SYS_KEY);
 
 async function checkAndFixAdmin() {
-    console.log('🔍 Checking admin status for leninzumaran9@gmail.com...');
+    console.log('🔍 Checking admin status for leninzumaran0@gmail.com...');
 
     // 1. Get User ID from Auth
     // Since we can't easily access auth.users table directly as anon, we rely on profiles.
@@ -17,7 +17,7 @@ async function checkAndFixAdmin() {
     const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('email', 'leninzumaran9@gmail.com');
+        .eq('email', 'leninzumaran0@gmail.com');
 
     if (error) {
         console.error('❌ Error fetching profiles:', error);

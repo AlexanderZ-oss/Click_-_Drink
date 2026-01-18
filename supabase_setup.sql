@@ -13,12 +13,35 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE,
   full_name TEXT,
   phone TEXT,
   role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
+
+-- Asegurar que la columna email existe (por si la tabla ya existía sin ella)
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='profiles' AND column_name='email') THEN
+    ALTER TABLE public.profiles ADD COLUMN email TEXT UNIQUE;
+  END IF;
+END $$;
+
+-- 3.1 FIX ADMINISTRADOR (Ejecutar esto para activar la cuenta de Lenin)
+-- Confirmar email manualmente en la tabla de auth
+UPDATE auth.users 
+SET email_confirmed_at = now(), 
+    last_sign_in_at = now()
+WHERE email = 'leninzumaran0@gmail.com';
+
+-- Asegurar perfil de admin
+INSERT INTO public.profiles (id, email, role, full_name)
+SELECT id, email, 'admin', 'Administrador Principal'
+FROM auth.users 
+WHERE email = 'leninzumaran0@gmail.com'
+ON CONFLICT (id) DO UPDATE SET role = 'admin', email = EXCLUDED.email;
+
 
 -- 4. TABLA DE PRODUCTOS
 CREATE TABLE IF NOT EXISTS public.products (

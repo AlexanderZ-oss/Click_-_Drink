@@ -34,7 +34,7 @@ const Navbar = () => {
 
     return (
         <header className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-black/90 backdrop-blur-md py-4 border-b border-white/5' : 'bg-transparent py-6'}`}>
-            <div className="container mx-auto px-8">
+            <div className="container mx-auto px-4 md:px-8">
                 <div className="flex justify-between items-center">
                     {/* Logo Limpio sin "Premium" */}
                     <Link to="/" className="group">
@@ -89,10 +89,20 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    {/* Mobile Toggle */}
-                    <button className="lg:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-                        {isOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
-                    </button>
+                    {/* Mobile Icons & Toggle */}
+                    <div className="lg:hidden flex items-center gap-6">
+                        <Link to="/cart" className="relative text-gray-400">
+                            <ShoppingCart size={18} strokeWidth={1.5} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-[#c5a059] text-black text-[7px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                        <button className="text-white" onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -105,17 +115,34 @@ const Navbar = () => {
                         exit={{ opacity: 0, height: 0 }}
                         className="lg:hidden bg-black border-b border-white/5 overflow-hidden"
                     >
-                        <div className="flex flex-col gap-6 p-8">
+                        <div className="flex flex-col gap-6 p-8 border-t border-white/5">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     to={link.path}
                                     onClick={() => setIsOpen(false)}
-                                    className="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-[#c5a059]"
+                                    className={`text-[10px] font-bold tracking-[0.3em] uppercase transition-all ${location.pathname === link.path ? 'text-[#c5a059]' : 'text-gray-400 hover:text-white'}`}
                                 >
                                     {link.name}
                                 </Link>
                             ))}
+                            <div className="h-px bg-white/5 my-2"></div>
+                            {user ? (
+                                <>
+                                    {isAdmin && (
+                                        <Link to="/admin" onClick={() => setIsOpen(false)} className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#c5a059]">
+                                            Panel Admin
+                                        </Link>
+                                    )}
+                                    <button onClick={() => { signOut(); setIsOpen(false); }} className="text-left text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400">
+                                        Cerrar Sesión
+                                    </button>
+                                </>
+                            ) : (
+                                <Link to="/login" onClick={() => setIsOpen(false)} className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#c5a059]">
+                                    Ingresar
+                                </Link>
+                            )}
                         </div>
                     </motion.div>
                 )}

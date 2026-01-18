@@ -68,14 +68,14 @@ export default function Promotions() {
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-r from-[#FF6B6B] to-[#FFE66D] mb-6">
                         <Percent className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-6xl font-black italic uppercase mb-4">
+                    <h1 className="text-4xl md:text-6xl font-black italic uppercase mb-4">
                         Promociones <span className="text-[#FF6B6B]">Especiales</span>
                     </h1>
-                    <p className="text-gray-400 text-lg">Aprovecha nuestras ofertas exclusivas</p>
+                    <p className="text-gray-400 text-base md:text-lg">Aprovecha nuestras ofertas exclusivas</p>
                 </motion.div>
 
                 {/* Promotions Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                     {promotions.map((promo, index) => {
                         const daysRemaining = getDaysRemaining(promo.valid_until);
                         const expired = isExpired(promo.valid_until);
@@ -109,7 +109,7 @@ export default function Promotions() {
 
                                 {/* Content */}
                                 <div className="p-6">
-                                    <h3 className="text-2xl font-black italic text-white mb-3">{promo.title}</h3>
+                                    <h3 className="text-xl md:text-2xl font-black italic text-white mb-3">{promo.title}</h3>
                                     <p className="text-gray-300 mb-4">{promo.description}</p>
 
                                     {/* Time Remaining */}

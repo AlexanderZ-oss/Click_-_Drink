@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: data.user.id,
                     email: email,
                     full_name: fullName,
-                    role: email === 'leninzumaran9@gmail.com' ? 'admin' : 'user'
+                    role: email === 'leninzumaran0@gmail.com' ? 'admin' : 'user'
                 });
                 if (profileError) console.warn('Manual profile creation warning:', profileError);
             }
@@ -126,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(null);
     };
 
-    const isAdmin = profile?.role === 'admin' || user?.email === 'leninzumaran9@gmail.com';
+    const isAdmin = profile?.role === 'admin' || user?.email === 'leninzumaran0@gmail.com';
 
     return (
         <AuthContext.Provider value={{ user, profile, session, loading, isAdmin, signInWithGoogle, signIn, signUp, signOut }}>
