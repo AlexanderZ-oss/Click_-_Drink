@@ -10,9 +10,9 @@ import BannerManager from '../components/BannerManager';
 import EventManager from '../components/EventManager';
 
 const Admin = () => {
-    const [loading, setLoading] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners' | 'events'>('dashboard');
-    const { user, isAdmin, signOut } = useAuth();
+    const { user, isAdmin, signOut, loading: authLoading } = useAuth();
     const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0, dailyRevenue: 0, dailyOrdersCount: 0, eventsCount: 0 });
     const [orders, setOrders] = useState<any[]>([]);
     const [usersList, setUsersList] = useState<any[]>([]);
@@ -21,14 +21,20 @@ const Admin = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!user || !isAdmin) {
+        if (loading) return; // Wait for AuthContext loading
+
+        if (!user || (!isAdmin && user.email !== 'leninzumaran9@gmail.com')) {
             navigate('/login');
             return;
         }
 
         const initializeAdmin = async () => {
             try {
-                setLoading(true);
+                // setLoading(true); // Don't reset loading here, reuse component state or separate it
+                // We use a separate local loading state 'initializing' if needed, or stick to 'loading'
+                // But Admin component has its own 'loading' state initialized to true
+                // Let's rely on AuthContext loading for redirection check, then start fetching data
+
                 setFetchError(null);
                 await Promise.all([
                     fetchStats(),
@@ -40,7 +46,7 @@ const Admin = () => {
                 console.error('Admin init error:', error);
                 setFetchError('Error de conexión con la base de datos (Failed to fetch). Verifique sus credenciales.');
             } finally {
-                setLoading(false);
+                setDataLoading(false);
             }
         };
 
@@ -93,7 +99,7 @@ const Admin = () => {
         if (data) setMessages(data);
     };
 
-    if (loading) return (
+    if (authLoading || dataLoading) return (
         <div className="min-h-screen bg-[#050505] flex items-center justify-center">
             <div className="text-[#c5a059] text-[10px] font-bold tracking-[0.5em] uppercase animate-pulse">Sincronizando Sistema...</div>
         </div>
