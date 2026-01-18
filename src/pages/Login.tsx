@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
-import { getConnectionStatus } from '../lib/supabase';
+import { getConnectionStatus, supabase } from '../lib/supabase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -25,13 +25,37 @@ const Login = () => {
         setLoading(true);
         setError(null);
 
-        const { error } = await signIn(email, password);
+        // @ts-ignore
+        const { data, error } = await signIn(email, password);
 
         if (error) {
             setError('Acceso denegado. Verifique sus credenciales.');
             setLoading(false);
         } else {
-            navigate('/');
+            // Check role for redirection
+            const userId = data.user?.id;
+            if (userId) {
+                // Check if admin by email
+                if (data.user.email === 'leninzumaran0@gmail.com') {
+                    navigate('/admin');
+                    return;
+                }
+
+                // Check profile role
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', userId)
+                    .single();
+
+                if (profile?.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/'); // Or /cart if preferred? User said "continue with purchase", letting them go to home or cart is fine.
+                }
+            } else {
+                navigate('/');
+            }
         }
     };
 

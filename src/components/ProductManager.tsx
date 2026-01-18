@@ -181,18 +181,27 @@ const ProductManager = () => {
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Categoría</label>
-                                    <select
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
+                                    <input
+                                        list="categories-list"
+                                        type="text" required
+                                        placeholder="Seleccionar o escribir..."
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold uppercase"
                                         value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    >
-                                        <option value="VODKA">VODKA</option>
-                                        <option value="RON">RON</option>
-                                        <option value="WHISKY">WHISKY</option>
-                                        <option value="CERVEZA">CERVEZA</option>
-                                        <option value="GIN">GIN</option>
-                                        <option value="VINOS">VINOS</option>
-                                    </select>
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value.toUpperCase() })}
+                                    />
+                                    <datalist id="categories-list">
+                                        <option value="VODKA" />
+                                        <option value="RON" />
+                                        <option value="WHISKY" />
+                                        <option value="CERVEZA" />
+                                        <option value="GIN" />
+                                        <option value="VINOS" />
+                                        <option value="PISCO" />
+                                        <option value="TEQUILA" />
+                                        <option value="LICORES" />
+                                        <option value="GASEOSAS" />
+                                        <option value="SNACKS" />
+                                    </datalist>
                                 </div>
                             </div>
 

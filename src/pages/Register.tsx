@@ -26,7 +26,8 @@ const Register = () => {
         setLoading(true);
         setError(null);
 
-        const { error } = await signUp(email, password, fullName);
+        // @ts-ignore
+        const { data, error } = await signUp(email, password, fullName);
 
         if (error) {
             setError(error.message || 'Error al registrar usuario');
@@ -34,7 +35,14 @@ const Register = () => {
         } else {
             setSuccess(true);
             setLoading(false);
-            setTimeout(() => navigate('/login'), 5000);
+
+            // If session exists (auto-confirmed or no confirm needed), redirect to home quickly
+            if (data?.session) {
+                setTimeout(() => navigate('/'), 1500);
+            } else {
+                // If confirmation needed
+                setTimeout(() => navigate('/login'), 5000);
+            }
         }
     };
 
@@ -49,18 +57,13 @@ const Register = () => {
                     <CheckCircle className="mx-auto text-[#c5a059] mb-8" size={64} strokeWidth={1} />
                     <h2 className="text-4xl font-serif text-white mb-6 uppercase tracking-wider">¡Bienvenido a Ferest!</h2>
                     <div className="space-y-6 text-gray-400 font-light leading-relaxed text-lg">
-                        <p>Tu registro ha sido exitoso.</p>
+                        <p>Tu cuenta ha sido creada exitosamente.</p>
                         <p className="border-y border-white/5 py-6">
-                            "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span> y a nuestra comunidad de licores selectos."
-                        </p>
-                        <p className="text-sm italic text-gray-500">
-                            Recibirás un correo electrónico de confirmación con los detalles de tu membresía.
-                            <br />
-                            <span className="text-[#c5a059] font-bold uppercase mt-2 block tracking-widest text-[10px]">Las facturas de tus compras serán enviadas a este correo.</span>
+                            "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span>."
                         </p>
                     </div>
-                    <button onClick={() => navigate('/login')} className="btn-premium mt-12 w-full">Ir al Ingreso</button>
-                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">Redirigiendo automáticamente...</p>
+                    <button onClick={() => navigate('/')} className="btn-premium mt-12 w-full">Continuar Comprando</button>
+                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">Redirigiendo...</p>
                 </motion.div>
             </div>
         );
