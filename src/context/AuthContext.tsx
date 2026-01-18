@@ -18,7 +18,7 @@ interface AuthContextType {
     isAdmin: boolean;
     signInWithGoogle: () => Promise<{ error: any }>;
     signIn: (email: string, password: string) => Promise<{ error: any }>;
-    signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+    signUp: (email: string, password: string, fullName: string) => Promise<{ data?: any; error: any }>;
     signOut: () => Promise<void>;
 }
 
@@ -98,14 +98,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signUp = async (email: string, password: string, fullName: string) => {
         try {
-            const { error } = await supabase.auth.signUp({
+            const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: { data: { full_name: fullName } },
             });
-            return { error };
+            // Manual profile creation fallback (if trigger is disabled)
+            if (data?.user && !error) {
+                const { error: profileError } = await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    email: email,
+                    full_name: fullName,
+                    role: email === 'leninzumaran0@gmail.com' ? 'admin' : 'user'
+                });
+                if (profileError) console.warn('Manual profile creation warning:', profileError);
+            }
+            return { data, error };
         } catch (e) {
-            return { error: e };
+            return { data: null, error: e };
         }
     };
 
