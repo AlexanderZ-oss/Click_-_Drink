@@ -21,7 +21,7 @@ const Admin = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (loading) return; // Wait for AuthContext loading
+        if (authLoading) return; // Wait for Auth context
 
         if (!user || (!isAdmin && user.email !== 'leninzumaran9@gmail.com')) {
             navigate('/login');
@@ -30,10 +30,8 @@ const Admin = () => {
 
         const initializeAdmin = async () => {
             try {
-                // setLoading(true); // Don't reset loading here, reuse component state or separate it
-                // We use a separate local loading state 'initializing' if needed, or stick to 'loading'
-                // But Admin component has its own 'loading' state initialized to true
-                // Let's rely on AuthContext loading for redirection check, then start fetching data
+                // Using dataLoading for internal fetch state
+                setFetchError(null);
 
                 setFetchError(null);
                 await Promise.all([
