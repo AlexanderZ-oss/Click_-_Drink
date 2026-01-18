@@ -11,6 +11,7 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [needsVerification, setNeedsVerification] = useState(false);
     const { signUp } = useAuth();
     const navigate = useNavigate();
 
@@ -41,7 +42,9 @@ const Register = () => {
                 setTimeout(() => navigate('/cart'), 1500);
             } else {
                 // If confirmation needed
-                setTimeout(() => navigate('/login'), 5000);
+                setNeedsVerification(true);
+                // Give user time to read the verification instruction before redirecting to login
+                setTimeout(() => navigate('/login'), 10000);
             }
         }
     };
@@ -55,18 +58,40 @@ const Register = () => {
                     className="max-w-xl w-full bg-[#0a0a0a] border border-[#c5a059]/20 p-12 text-center"
                 >
                     <CheckCircle className="mx-auto text-[#c5a059] mb-8" size={64} strokeWidth={1} />
-                    <h2 className="text-4xl font-serif text-white mb-6 uppercase tracking-wider">¡Bienvenido a Ferest!</h2>
+                    <h2 className="text-4xl font-serif text-white mb-6 uppercase tracking-wider">
+                        {needsVerification ? '¡Verificación Requerida!' : '¡Bienvenido a Ferest!'}
+                    </h2>
                     <div className="space-y-6 text-gray-400 font-light leading-relaxed text-lg">
-                        <p>Tu cuenta ha sido creada exitosamente.</p>
-                        <p className="border-y border-white/5 py-6">
-                            "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span>."
-                        </p>
-                        <p className="text-sm italic text-green-500">
-                            Se ha enviado un mensaje de bienvenida a tu correo.
-                        </p>
+                        {needsVerification ? (
+                            <>
+                                <p className="text-white">Hemos enviado un enlace de confirmación a <span className="text-[#c5a059]">{email}</span>.</p>
+                                <p className="border-y border-white/5 py-6">
+                                    Para acceder a tu cuenta y continuar con la compra, es <strong className="text-white">obligatorio</strong> verificar tu correo electrónico.
+                                </p>
+                                <p className="text-sm italic text-yellow-500">
+                                    Por favor revisa tu bandeja de entrada (y Spam) y haz clic en el enlace.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <p>Tu cuenta ha sido creada exitosamente.</p>
+                                <p className="border-y border-white/5 py-6">
+                                    "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span>."
+                                </p>
+                                <p className="text-sm italic text-green-500">
+                                    Se ha enviado un mensaje de bienvenida a tu correo.
+                                </p>
+                            </>
+                        )}
                     </div>
-                    <button onClick={() => navigate('/cart')} className="btn-premium mt-12 w-full">CONTINUAR AL PAGO</button>
-                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">Redirigiendo al pago...</p>
+
+                    <button onClick={() => navigate(needsVerification ? '/login' : '/cart')} className="btn-premium mt-12 w-full">
+                        {needsVerification ? 'IR AL INICIO DE SESIÓN' : 'CONTINUAR AL PAGO'}
+                    </button>
+
+                    <p className="text-[10px] text-gray-600 mt-6 uppercase tracking-widest">
+                        {needsVerification ? 'Redirigiendo al login en unos segundos...' : 'Redirigiendo al pago...'}
+                    </p>
                 </motion.div>
             </div>
         );

@@ -29,7 +29,11 @@ const Login = () => {
         const { data, error } = await signIn(email, password);
 
         if (error) {
-            setError('Acceso denegado. Verifique sus credenciales.');
+            if (error.message && error.message.includes('Email not confirmed')) {
+                setError('Acceso denegado: Su correo electrónico no ha sido verificado. Por favor revise su bandeja de entrada.');
+            } else {
+                setError('Acceso denegado. Verifique sus credenciales.');
+            }
             setLoading(false);
         } else {
             // Check role for redirection
