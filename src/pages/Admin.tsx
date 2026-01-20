@@ -7,11 +7,13 @@ import { motion } from 'framer-motion';
 import ProductManager from '../components/ProductManager';
 import PromoManager from '../components/PromoManager';
 import BannerManager from '../components/BannerManager';
+
 import EventManager from '../components/EventManager';
+import StoreConfigManager from '../components/StoreConfigManager';
 
 const Admin = () => {
     const [dataLoading, setDataLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners' | 'events'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'sales' | 'users' | 'promos' | 'messages' | 'banners' | 'events' | 'config'>('dashboard');
     const { user, isAdmin, signOut, loading: authLoading } = useAuth();
     const [stats, setStats] = useState({ views: 0, orders: 0, revenue: 0, users: 0, dailyRevenue: 0, dailyOrdersCount: 0, eventsCount: 0 });
     const [orders, setOrders] = useState<any[]>([]);
@@ -153,6 +155,9 @@ const Admin = () => {
                     <button onClick={() => setActiveTab('events')} className={`w-full flex items-center gap-4 p-4 rounded-lg transition-colors ${activeTab === 'events' ? 'bg-[#c5a059]/10 text-[#c5a059]' : 'text-gray-500 hover:bg-white/5'}`}>
                         <Calendar size={20} /><span className="hidden lg:block text-xs font-bold uppercase tracking-widest">Eventos</span>
                     </button>
+                    <button onClick={() => setActiveTab('config')} className={`w-full flex items-center gap-4 p-4 rounded-lg transition-colors ${activeTab === 'config' ? 'bg-[#c5a059]/10 text-[#c5a059]' : 'text-gray-500 hover:bg-white/5'}`}>
+                        <Settings size={20} /><span className="hidden lg:block text-xs font-bold uppercase tracking-widest">Configuración</span>
+                    </button>
                 </nav>
                 <div className="p-4 mt-auto border-t border-white/5">
                     <button onClick={() => signOut()} className="w-full flex items-center gap-4 p-4 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors">
@@ -247,6 +252,7 @@ const Admin = () => {
                         )}
                         {activeTab === 'banners' && <BannerManager />}
                         {activeTab === 'events' && <EventManager />}
+                        {activeTab === 'config' && <StoreConfigManager />}
                         {activeTab === 'sales' && (
                             <div className="border border-white/5 bg-[#080808] rounded-lg p-10">
                                 <h2 className="text-2xl font-serif italic mb-10">Bitácora de Ventas</h2>

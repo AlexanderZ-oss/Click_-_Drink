@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, Edit2, X, Save, Boxes } from 'lucide-react';
+import { useToaster } from './ui/Toaster';
 
 const ProductManager = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -55,6 +56,8 @@ const ProductManager = () => {
         setIsModalOpen(true);
     };
 
+    const { showToast } = useToaster();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const productData = {
@@ -65,18 +68,25 @@ const ProductManager = () => {
             wholesale_min: formData.wholesale_min ? parseInt(formData.wholesale_min) : 12
         };
 
-        if (editingProduct) {
-            const { error } = await supabase.from('products').update(productData).eq('id', editingProduct.id);
-            if (!error) {
+        try {
+            if (editingProduct) {
+                const { error } = await supabase.from('products').update(productData).eq('id', editingProduct.id);
+                if (error) throw error;
+
+                showToast('Producto actualizado exitosamente', 'success');
+                setIsModalOpen(false);
+                fetchProducts();
+            } else {
+                const { error } = await supabase.from('products').insert([productData]);
+                if (error) throw error;
+
+                showToast('Producto guardado exitosamente', 'success');
                 setIsModalOpen(false);
                 fetchProducts();
             }
-        } else {
-            const { error } = await supabase.from('products').insert([productData]);
-            if (!error) {
-                setIsModalOpen(false);
-                fetchProducts();
-            }
+        } catch (error: any) {
+            console.error('Error saving product:', error);
+            showToast('Error al guardar: ' + (error.message || 'Error desconocido'), 'error');
         }
     };
 

@@ -99,7 +99,7 @@ const Cart = () => {
     const [user, setUser] = useState<any>(null);
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [invoiceType, setInvoiceType] = useState<'boleta' | 'factura'>('boleta');
-    const [details, setDetails] = useState({ ruc_dni: '', address: '', phone: '', company: '' });
+    const [details, setDetails] = useState({ ruc_dni: '', address: '', phone: '', company: '', delivery_time: '' });
     const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
     const [isPaying, setIsPaying] = useState(false);
     const navigate = useNavigate();
@@ -135,7 +135,8 @@ const Cart = () => {
             delivery_fee: deliveryFee,
             invoice_type: invoiceType,
             ruc_dni: details.ruc_dni,
-            company_name: details.company
+            company_name: details.company,
+            delivery_time: details.delivery_time
         }]).select().single();
 
         if (error) {
@@ -347,6 +348,16 @@ const Cart = () => {
                                                 }
                                                 <input type="text" placeholder="Dirección de Entrega" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.address} onChange={e => setDetails({ ...details, address: e.target.value })} />
                                                 <input type="tel" placeholder="Teléfono / Celular" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.phone} onChange={e => setDetails({ ...details, phone: e.target.value })} />
+                                                <div className="pt-2">
+                                                    <label className="block text-[10px] uppercase font-bold text-[#d4af37] mb-2 tracking-widest">Hora de Entrega (Eventos)</label>
+                                                    <input
+                                                        type="time"
+                                                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none"
+                                                        value={details.delivery_time}
+                                                        onChange={e => setDetails({ ...details, delivery_time: e.target.value })}
+                                                    />
+                                                    <p className="text-[9px] text-gray-500 mt-1">Opcional. Especifica la hora para entregas programadas.</p>
+                                                </div>
                                             </div>
                                         </div>
 
