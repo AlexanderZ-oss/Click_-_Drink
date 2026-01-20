@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Edit2, X, Save, Calendar, MapPin } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Save, Calendar, MapPin, Upload } from 'lucide-react';
+import { useToaster } from './ui/Toaster';
 
 const EventManager = () => {
     const [events, setEvents] = useState<any[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const { showToast } = useToaster();
     const [editingEvent, setEditingEvent] = useState<any>(null);
     const [formData, setFormData] = useState({
         title: '',
@@ -55,18 +58,55 @@ const EventManager = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (editingEvent) {
-            const { error } = await supabase.from('events').update(formData).eq('id', editingEvent.id);
-            if (!error) {
+        try {
+            if (editingEvent) {
+                const { error } = await supabase.from('events').update(formData).eq('id', editingEvent.id);
+                if (error) throw error;
+                showToast('Evento actualizado', 'success');
+                setIsModalOpen(false);
+                fetchEvents();
+            } else {
+                const { error } = await supabase.from('events').insert([formData]);
+                if (error) throw error;
+                showToast('Evento creado exitosamente', 'success');
                 setIsModalOpen(false);
                 fetchEvents();
             }
-        } else {
-            const { error } = await supabase.from('events').insert([formData]);
-            if (!error) {
-                setIsModalOpen(false);
-                fetchEvents();
+        } catch (error: any) {
+            console.error('Error saving event:', error);
+            showToast('Error al guardar evento: ' + error.message, 'error');
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setUploading(true);
+            if (!e.target.files || e.target.files.length === 0) {
+                throw new Error('Por favor selecciona una imagen.');
             }
+
+            const file = e.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('events')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                throw uploadError;
+            }
+
+            const { data } = supabase.storage.from('events').getPublicUrl(filePath);
+
+            setFormData({ ...formData, image_url: data.publicUrl });
+            showToast('Imagen subida exitosamente', 'success');
+        } catch (error: any) {
+            console.error('Error uploads:', error);
+            showToast('Error al subir imagen (Verifica que exista el bucket "events"): ' + error.message, 'error');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -142,7 +182,19 @@ const EventManager = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">URL Imagen</label>
-                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.image_url} onChange={e => setFormData({ ...formData, image_url: e.target.value })} />
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light"
+                                            value={formData.image_url}
+                                            onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                                            placeholder="https://..."
+                                        />
+                                        <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 rounded flex items-center justify-center px-3 transition-colors">
+                                            <Upload size={18} className={uploading ? 'animate-bounce text-[#c5a059]' : 'text-gray-400'} />
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading} />
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 

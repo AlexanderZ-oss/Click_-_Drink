@@ -1,7 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, Clock } from 'lucide-react';
 
+import { supabase } from '../lib/supabase';
+
 const Footer = () => {
+    const [config, setConfig] = useState({
+        store_address: 'Mercado La Hermelinda',
+        store_hours: '8:00 AM - 4:00 PM',
+        phone: '+51 987 654 321',
+        email: 'pedidos@ferest.com'
+    });
+
+    useEffect(() => {
+        const fetchConfig = async () => {
+            const { data } = await supabase.from('store_settings').select('*');
+            if (data) {
+                const newConfig: any = { ...config };
+                data.forEach((item: any) => {
+                    if (item.value) newConfig[item.key] = item.value;
+                });
+                setConfig(newConfig);
+            }
+        };
+        fetchConfig();
+    }, []);
+
     return (
         <footer className="bg-[#050505] pt-16 pb-8 border-t border-[#1a1a1a]">
             <div className="container mx-auto px-4">
@@ -65,19 +88,19 @@ const Footer = () => {
                         <div className="space-y-4 text-sm text-gray-400">
                             <div className="flex items-start gap-3">
                                 <MapPin className="text-[#d4af37] shrink-0" size={18} />
-                                <span>Av. Principal 123, Miraflores<br />Lima, Perú</span>
+                                <span>{config.store_address}<br /><span className="text-xs text-gray-500">Trujillo, Perú</span></span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone className="text-[#d4af37] shrink-0" size={18} />
-                                <span>+51 987 654 321</span>
+                                <span>{config.phone}</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail className="text-[#d4af37] shrink-0" size={18} />
-                                <span>pedidos@ferest.com</span>
+                                <span>{config.email}</span>
                             </div>
                             <div className="flex items-start gap-3">
                                 <Clock className="text-[#d4af37] shrink-0" size={18} />
-                                <span>Lun - Dom: 4:00 PM - 2:00 AM<br /><span className="text-xs text-gray-500">Delivery continuado</span></span>
+                                <span>{config.store_hours}<br /><span className="text-xs text-gray-500">Delivery Continuo</span></span>
                             </div>
                         </div>
                     </div>

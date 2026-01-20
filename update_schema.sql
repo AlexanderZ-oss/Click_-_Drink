@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS public.store_settings (
 -- Turn on RLS for store_settings
 ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
 
--- Allow read access to everyone for store_settings
+-- Handle policies safely (Drop first to avoid "already exists" error)
+DROP POLICY IF EXISTS "Allow public read access" ON public.store_settings;
 CREATE POLICY "Allow public read access" ON public.store_settings
     FOR SELECT TO public USING (true);
 
--- Allow full access to authenticated users (admins) for store_settings
+DROP POLICY IF EXISTS "Allow admin insert/update" ON public.store_settings;
 CREATE POLICY "Allow admin insert/update" ON public.store_settings
     FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
@@ -24,10 +25,38 @@ INSERT INTO public.store_settings (key, value) VALUES
 ('store_hours', '8:00 AM - 4:00 PM')
 ON CONFLICT (key) DO NOTHING;
 
--- 2. Add delivery_time column to orders table if it doesn't exist
+-- 2. Add missing columns to ORDERS table
 DO $$
 BEGIN
+    -- Add delivery_time
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'delivery_time') THEN
         ALTER TABLE public.orders ADD COLUMN delivery_time TEXT;
+    END IF;
+
+    -- Add invoice_type (Boleta/Factura)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'invoice_type') THEN
+        ALTER TABLE public.orders ADD COLUMN invoice_type TEXT DEFAULT 'boleta';
+    END IF;
+
+    -- Add ruc_dni
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'ruc_dni') THEN
+        ALTER TABLE public.orders ADD COLUMN ruc_dni TEXT;
+    END IF;
+
+    -- Add company_name (Reason Social)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'orders' AND column_name = 'company_name') THEN
+        ALTER TABLE public.orders ADD COLUMN company_name TEXT;
+    END IF;
+END $$;
+
+-- 3. Add wholesale columns to PRODUCTS table if they don't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'wholesale_price') THEN
+        ALTER TABLE public.products ADD COLUMN wholesale_price NUMERIC;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'wholesale_min') THEN
+        ALTER TABLE public.products ADD COLUMN wholesale_min INTEGER DEFAULT 12;
     END IF;
 END $$;
