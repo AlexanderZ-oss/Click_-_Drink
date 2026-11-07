@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { Trash2, Plus, Minus, MapPin, Truck, ChevronRight, ShoppingBag, CreditCard, ChevronDown, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,10 +9,12 @@ import { useToaster } from '../components/ui/Toaster';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-// Stripe Public Key
-const stripePromise = loadStripe('pk_test_51SlDOJRTyk5rxpp0DTU5MQM3yv8WZvxkKa9x7NzJGosrNSg9Uxaml3D0IGFe77ObPXez81TPpEPED5MYj3dMh8tA00KEHf9pB5');
+// Llave pública de Stripe (env var en producción: VITE_STRIPE_PUBLISHABLE_KEY)
+const stripePromise = loadStripe(
+    (import.meta as any).env?.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51SlDOJRTyk5rxpp0DTU5MQM3yv8WZvxkKa9x7NzJGosrNSg9Uxaml3D0IGFe77ObPXez81TPpEPED5MYj3dMh8tA00KEHf9pB5'
+);
 
-const CheckoutForm = ({ total, details, invoiceType, onOrderSuccess, onPayingState }: any) => {
+const CheckoutForm = ({ total, details, invoiceType, paying, onOrderSuccess, onPayingState }: any) => {
     const stripe = useStripe();
     const elements = useElements();
     const { showToast } = useToaster();
@@ -19,16 +22,23 @@ const CheckoutForm = ({ total, details, invoiceType, onOrderSuccess, onPayingSta
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        if (!stripe || !elements) return;
+        if (!stripe || !elements || paying) return;
 
         onPayingState(true);
-        showToast('Procesando pago con Stripe...', 'info');
+        showToast('Registrando tarjeta con Stripe...', 'info');
 
         const cardElement = elements.getElement(CardElement);
+        if (!cardElement) {
+            showToast('No se detectó el método de pago.', 'error');
+            onPayingState(false);
+            return;
+        }
 
+        // Nota: esto TOKENIZA la tarjeta pero NO realiza ningún cobro.
+        // Un cobro real requiere un PaymentIntent confirmado en el servidor (ver informe).
         const { error, paymentMethod } = await stripe.createPaymentMethod({
             type: 'card',
-            card: cardElement!,
+            card: cardElement,
             billing_details: {
                 address: { line1: details.address },
                 phone: details.phone,
@@ -39,11 +49,10 @@ const CheckoutForm = ({ total, details, invoiceType, onOrderSuccess, onPayingSta
             showToast(error.message || 'Error en el pago', 'error');
             onPayingState(false);
         } else {
-            console.log('[PaymentMethod]', paymentMethod);
-            showToast('Pago autorizado exitosamente.', 'success');
+            showToast('Tarjeta registrada. Confirmando pedido...', 'success');
             setTimeout(() => {
-                onOrderSuccess();
-            }, 1000);
+                onOrderSuccess(paymentMethod.id);
+            }, 500);
         }
     };
 
@@ -84,11 +93,11 @@ const CheckoutForm = ({ total, details, invoiceType, onOrderSuccess, onPayingSta
 
             <button
                 type="submit"
-                disabled={!stripe}
+                disabled={!stripe || paying}
                 className="w-full bg-[#d4af37] hover:bg-[#b5952f] text-black font-bold py-5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <CreditCard size={20} />
-                <span>PAGAR AHORA</span>
+                <span>{paying ? 'PROCESANDO...' : 'PAGAR AHORA'}</span>
             </button>
         </form>
     );
@@ -96,7 +105,7 @@ const CheckoutForm = ({ total, details, invoiceType, onOrderSuccess, onPayingSta
 
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity, subtotal, deliveryFee, total, distance, setDistance, clearCart } = useCart();
-    const [user, setUser] = useState<any>(null);
+    const { user } = useAuth();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [invoiceType, setInvoiceType] = useState<'boleta' | 'factura'>('boleta');
     const [details, setDetails] = useState({ ruc_dni: '', address: '', phone: '', company: '', delivery_time: '' });
@@ -105,30 +114,42 @@ const Cart = () => {
     const navigate = useNavigate();
     const { showToast } = useToaster();
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-        });
-    }, []);
-
     const handleCheckoutStart = () => {
         if (!user) {
-            showToast('Inicia sesión para continuar con tu compra.', 'info');
-            // Allow checking out layout to appear, but maybe prompt login there? 
-            // Or just redirect.
-            // User requirement: "Debes iniciar sesión o registrarte"
+            showToast('Debes iniciar sesión o registrarte para continuar con tu compra.', 'info');
             setTimeout(() => navigate('/login'), 1500);
             return;
         }
         setIsCheckingOut(true);
     };
 
-    const handleFinalOrder = async () => {
+    const handleFinalOrder = async (paymentMethodId?: string) => {
+        if (!user) {
+            showToast('Tu sesión expiró. Inicia sesión nuevamente.', 'error');
+            setIsPaying(false);
+            return;
+        }
+
+        // Validación de datos obligatorios de facturación
+        if (!details.address.trim() || !details.phone.trim() || !details.ruc_dni.trim()) {
+            showToast('Completa tu documento, dirección y teléfono para continuar.', 'error');
+            setIsPaying(false);
+            return;
+        }
+        if (invoiceType === 'factura' && !details.company.trim()) {
+            showToast('Indica la Razón Social para emitir la factura.', 'error');
+            setIsPaying(false);
+            return;
+        }
+
         const { data, error } = await supabase.from('orders').insert([{
             user_id: user.id,
             customer_email: user.email,
             total: total,
-            status: 'paid',
+            // El pedido inicia como PENDIENTE hasta que el pago se confirme en el servidor.
+            // 'paid' solo debe asignarse tras un cobro real verificado en el panel admin.
+            status: 'pending',
+            payment_method_id: paymentMethodId || null,
             items: cart,
             delivery_address: details.address,
             customer_phone: details.phone,
@@ -170,7 +191,7 @@ const Cart = () => {
 
                     <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">¡Pedido Recibido!</h1>
                     <p className="text-gray-400 mb-10 text-lg leading-relaxed font-light">
-                        Tu pedido <span className="text-[#d4af37] font-mono font-medium">#{orderSuccess.slice(0, 8)}</span> ha sido procesado exitosamente. Te enviaremos los detalles a tu correo.
+                        Tu pedido <span className="text-[#d4af37] font-mono font-medium">#{orderSuccess.slice(0, 8)}</span> fue registrado con estado <span className="text-white font-medium">Pendiente de Pago</span>. Nos contactaremos contigo tras confirmar la transacción.
                     </p>
 
                     <Link to="/" className="inline-flex items-center gap-2 text-sm font-bold tracking-widest uppercase border-b-2 border-[#d4af37] pb-1 text-[#d4af37] hover:text-white hover:border-white transition-colors">
@@ -232,7 +253,15 @@ const Cart = () => {
 
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-white text-lg md:text-xl truncate pr-4">{item.name}</h3>
-                                        <p className="text-[#d4af37] font-medium text-lg mt-1">S/ {item.price.toFixed(2)}</p>
+                                        {(item.wholesale_price && item.wholesale_min && item.quantity >= item.wholesale_min) ? (
+                                            <p className="text-[#d4af37] font-medium text-lg mt-1">
+                                                S/ {item.wholesale_price.toFixed(2)}
+                                                <span className="ml-2 text-xs text-gray-500 line-through">S/ {item.price.toFixed(2)}</span>
+                                                <span className="ml-2 text-[10px] text-emerald-400 font-bold uppercase">Mayorista</span>
+                                            </p>
+                                        ) : (
+                                            <p className="text-[#d4af37] font-medium text-lg mt-1">S/ {item.price.toFixed(2)}</p>
+                                        )}
                                     </div>
                                     <div className="flex flex-col items-end gap-4 pr-2">
                                         <button onClick={() => removeFromCart(item.id)} className="text-white/20 hover:text-red-500 transition-colors p-2">
@@ -342,12 +371,12 @@ const Cart = () => {
                                             </div>
 
                                             <div className="space-y-3">
-                                                <input type="text" placeholder={invoiceType === 'boleta' ? 'DNI' : 'RUC'} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.ruc_dni} onChange={e => setDetails({ ...details, ruc_dni: e.target.value })} />
+                                                <input required type="text" placeholder={invoiceType === 'boleta' ? 'DNI' : 'RUC'} maxLength={11} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.ruc_dni} onChange={e => setDetails({ ...details, ruc_dni: e.target.value })} />
                                                 {invoiceType === 'factura' &&
-                                                    <input type="text" placeholder="Razón Social" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.company} onChange={e => setDetails({ ...details, company: e.target.value })} />
+                                                    <input required type="text" placeholder="Razón Social" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.company} onChange={e => setDetails({ ...details, company: e.target.value })} />
                                                 }
-                                                <input type="text" placeholder="Dirección de Entrega" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.address} onChange={e => setDetails({ ...details, address: e.target.value })} />
-                                                <input type="tel" placeholder="Teléfono / Celular" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.phone} onChange={e => setDetails({ ...details, phone: e.target.value })} />
+                                                <input required type="text" placeholder="Dirección de Entrega" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.address} onChange={e => setDetails({ ...details, address: e.target.value })} />
+                                                <input required type="tel" inputMode="tel" maxLength={15} placeholder="Teléfono / Celular" pattern="[0-9+\s]{6,15}" title="Solo números, mínimo 6 dígitos" className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:border-[#d4af37] outline-none" value={details.phone} onChange={e => setDetails({ ...details, phone: e.target.value })} />
                                                 <div className="pt-2">
                                                     <label className="block text-[10px] uppercase font-bold text-[#d4af37] mb-2 tracking-widest">Hora de Entrega (Eventos)</label>
                                                     <input
@@ -363,7 +392,7 @@ const Cart = () => {
 
                                         <div className="pt-6 border-t border-white/10">
                                             <Elements stripe={stripePromise}>
-                                                <CheckoutForm total={total} details={details} invoiceType={invoiceType} onOrderSuccess={handleFinalOrder} onPayingState={setIsPaying} />
+                                                <CheckoutForm total={total} details={details} invoiceType={invoiceType} paying={isPaying} onOrderSuccess={handleFinalOrder} onPayingState={setIsPaying} />
                                             </Elements>
                                         </div>
                                     </motion.div>

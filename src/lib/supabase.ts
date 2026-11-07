@@ -14,13 +14,18 @@ const dbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || SYS_KEY;
 
 const isReady = dbUrl.length > 0 && dbKey.length > 0 && dbUrl.startsWith('http');
 
+// Reemplaza variables de entorno vacías por fallback para evitar crasheos.
+const effectiveUrl = isReady ? dbUrl : SYS_URL;
+const effectiveKey = (dbUrl !== SYS_URL || dbKey !== SYS_KEY) && dbKey.length > 0 ? dbKey : SYS_KEY;
+
 export const supabase = createClient(
-    isReady ? dbUrl : SYS_URL,
-    isReady ? dbKey : SYS_KEY,
+    effectiveUrl,
+    effectiveKey,
     {
         auth: {
             persistSession: true,
-            storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+            // localStorage: la sesión sobrevive al cierre del navegador.
+            storage: typeof window !== 'undefined' ? window.localStorage : undefined,
             autoRefreshToken: true,
             detectSessionInUrl: true
         }
@@ -28,8 +33,8 @@ export const supabase = createClient(
 );
 
 export const getConnectionStatus = () => ({
-    isReady: true,
-    connected: true,
+    isReady,
+    connected: isReady,
     hasUrl: !!dbUrl,
     hasKey: !!dbKey,
     type: 'Cloud Connection',

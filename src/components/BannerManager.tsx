@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useToaster } from '../components/ui/Toaster';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Image, Link as LinkIcon } from 'lucide-react';
 
 interface Banner {
@@ -18,6 +19,7 @@ interface Banner {
 
 export default function BannerManager() {
     const [banners, setBanners] = useState<Banner[]>([]);
+    const { showToast } = useToaster();
     const [showForm, setShowForm] = useState(false);
     const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
     const [formData, setFormData] = useState({
@@ -90,7 +92,7 @@ export default function BannerManager() {
             fetchBanners();
         } catch (error) {
             console.error('Error saving banner:', error);
-            alert('Error al guardar el banner');
+            showToast('Error al guardar el banner', 'error');
         }
     };
 
@@ -121,7 +123,7 @@ export default function BannerManager() {
             fetchBanners();
         } catch (error) {
             console.error('Error deleting banner:', error);
-            alert('Error al eliminar el banner');
+            showToast('Error al eliminar el banner', 'error');
         }
     };
 

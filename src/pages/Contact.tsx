@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Instagram, Facebook } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToaster } from '../components/ui/Toaster';
 import { motion } from 'framer-motion';
 
 const Contact = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [sending, setSending] = useState(false);
+    const { showToast } = useToaster();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,8 +20,11 @@ const Contact = () => {
         }]);
 
         if (!error) {
-            alert('¡Mensaje enviado con éxito!');
+            showToast('¡Mensaje enviado con éxito!', 'success');
             setFormData({ name: '', email: '', message: '' });
+        } else {
+            console.error('Error sending message:', error);
+            showToast('No se pudo enviar el mensaje. Inténtalo de nuevo.', 'error');
         }
         setSending(false);
     };

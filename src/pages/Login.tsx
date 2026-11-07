@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { getConnectionStatus, supabase } from '../lib/supabase';
+import { isAdminEmail } from '../lib/config';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -39,8 +40,8 @@ const Login = () => {
             // Check role for redirection
             const userId = data.user?.id;
             if (userId) {
-                // Check if admin by email
-                if (data.user.email === 'leninzumaran9@gmail.com') {
+                // Check if admin by email or profile role
+                if (isAdminEmail(data.user.email)) {
                     navigate('/admin');
                     return;
                 }
@@ -55,10 +56,10 @@ const Login = () => {
                 if (profile?.role === 'admin') {
                     navigate('/admin');
                 } else {
-                    navigate('/cart');
+                    navigate('/');
                 }
             } else {
-                navigate('/cart');
+                navigate('/');
             }
         }
     };

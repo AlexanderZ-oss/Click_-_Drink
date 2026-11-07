@@ -14,7 +14,10 @@ export default function Events() {
                 .select('*')
                 .eq('active', true)
                 .order('date', { ascending: true });
-            if (data) setEvents(data);
+            // Solo eventos actuales o futuros
+            const now = new Date();
+            const upcoming = (data || []).filter(e => !e.date || new Date(e.date) >= new Date(now.toDateString()));
+            setEvents(upcoming);
             setLoading(false);
         };
         fetchEvents();
@@ -45,10 +48,15 @@ export default function Events() {
                                 className={`flex flex-col lg:flex-row items-center gap-16 ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}
                             >
                                 <div className="flex-1 w-full aspect-[4/5] lg:aspect-square relative overflow-hidden group">
-                                    <img
-                                        src={event.image_url || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'}
-                                        className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
-                                    />
+                                    {event.image_url ? (
+                                        <img
+                                            src={event.image_url}
+                                            className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
+                                            alt={event.title}
+                                        />
+                                    ) : (
+                                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(197,160,89,0.2)_0%,_#0a0a0a_70%)]"></div>
+                                    )}
                                     <div className="absolute inset-0 border border-white/5 m-4 pointer-events-none"></div>
                                 </div>
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { isAdminEmail } from '../lib/config';
 
 interface Profile {
     id: string;
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const initAuth = async () => {
@@ -41,6 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
             } catch (e) {
                 console.error('Session init error:', e);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -49,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
+            setLoading(false);
             if (session?.user) {
                 fetchProfile(session.user.id);
             } else {
@@ -109,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: data.user.id,
                     email: email,
                     full_name: fullName,
-                    role: email === 'leninzumaran0@gmail.com' ? 'admin' : 'user'
+                    role: isAdminEmail(email) ? 'admin' : 'user'
                 });
                 if (profileError) console.warn('Manual profile creation warning:', profileError);
             }
@@ -126,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(null);
     };
 
-    const isAdmin = profile?.role === 'admin' || user?.email === 'leninzumaran0@gmail.com';
+    const isAdmin = profile?.role === 'admin' || isAdminEmail(user?.email);
 
     return (
         <AuthContext.Provider value={{ user, profile, session, loading, isAdmin, signInWithGoogle, signIn, signUp, signOut }}>

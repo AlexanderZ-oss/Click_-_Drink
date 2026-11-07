@@ -10,6 +10,7 @@ import BannerManager from '../components/BannerManager';
 
 import EventManager from '../components/EventManager';
 import StoreConfigManager from '../components/StoreConfigManager';
+import { isAdminEmail } from '../lib/config';
 
 const Admin = () => {
     const [dataLoading, setDataLoading] = useState(true);
@@ -25,7 +26,7 @@ const Admin = () => {
     useEffect(() => {
         if (authLoading) return; // Wait for Auth context
 
-        if (!user || (!isAdmin && user.email !== 'leninzumaran9@gmail.com')) {
+        if (!user || !isAdminEmail(user.email) || !isAdmin) {
             navigate('/login');
             return;
         }

@@ -46,12 +46,9 @@ const Home = () => {
         <div className="bg-[#050505] min-h-screen text-white">
             <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0">
-                    <div className="absolute inset-0 bg-black/60 z-10"></div>
-                    <img
-                        src="https://images.unsplash.com/photo-1569701881644-02deb3312ae5?auto=format&fit=crop&q=80&w=1920"
-                        className="w-full h-full object-cover"
-                        alt="Background"
-                    />
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(197,160,89,0.25)_0%,_transparent_55%)]"></div>
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(120,80,30,0.18)_0%,_transparent_50%)]"></div>
+                    <div className="absolute inset-0 bg-[linear-gradient(160deg,_#0a0a0a_0%,_#000000_60%)]"></div>
                 </div>
 
                 <div className="container relative z-20 px-8 text-center">
@@ -92,8 +89,19 @@ const Home = () => {
                         <div key={product.id} className="group">
                             <div className="relative aspect-[3/4] overflow-hidden mb-4 md:mb-6 bg-[#0f0f0f] border border-white/5 rounded-sm">
                                 <img src={product.image_url} className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt={product.name} />
+                                {product.stock === 0 && (
+                                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                                        <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white border border-white/20 px-4 py-2">Agotado</span>
+                                    </div>
+                                )}
                                 <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all">
-                                    <button onClick={() => addToCart(product)} className="w-full btn-premium py-2 md:py-3 text-[8px] md:text-[9px]">AÑADIR</button>
+                                    <button
+                                        onClick={() => addToCart(product)}
+                                        disabled={product.stock === 0}
+                                        className="w-full btn-premium py-2 md:py-3 text-[8px] md:text-[9px] disabled:opacity-40 disabled:cursor-not-allowed"
+                                    >
+                                        {product.stock === 0 ? 'AGOTADO' : 'AÑADIR'}
+                                    </button>
                                 </div>
                             </div>
                             <h3 className="font-serif text-sm md:text-lg text-white mb-1 md:mb-2 uppercase tracking-wide truncate">{product.name}</h3>

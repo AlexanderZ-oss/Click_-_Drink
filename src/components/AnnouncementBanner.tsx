@@ -43,6 +43,10 @@ export default function AnnouncementBanner() {
     }, []);
 
     useEffect(() => {
+        // Mantener el índice dentro del rango al descartar banners
+        if (currentIndex >= activeBanners.length) {
+            setCurrentIndex((prev) => Math.max(0, Math.min(prev, activeBanners.length - 1)));
+        }
         // Auto-rotate banners every 5 seconds
         if (activeBanners.length > 1) {
             const interval = setInterval(() => {
@@ -88,7 +92,7 @@ export default function AnnouncementBanner() {
     };
 
     const activeBanners = banners.filter((banner) => !dismissed.includes(banner.id));
-    const currentBanner = activeBanners[currentIndex];
+    const currentBanner = activeBanners[Math.min(currentIndex, Math.max(0, activeBanners.length - 1))];
 
     if (!currentBanner) return null;
 

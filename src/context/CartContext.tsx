@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { FREE_DELIVERY_THRESHOLD, DELIVERY_COST_PER_KM } from '../lib/config';
 
 interface CartItem {
     id: number;
@@ -19,8 +20,7 @@ interface CartContextType {
     subtotal: number;
     total: number;
     deliveryFee: number;
-    setDistance: (km: number) => void;
-    distance: number;
+    setDistance: (km: number) => void;    distance: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,7 +35,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return [];
         }
     });
-    const [distance, setDistance] = useState(0);
+    const [distance, setDistanceState] = useState(0);
+    const setDistance = (km: number) => setDistanceState(Math.max(0, Number.isFinite(km) ? km : 0));
 
     useEffect(() => {
         localStorage.setItem('ferest_cart', JSON.stringify(cart));
@@ -45,9 +46,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCart(prev => {
             const existing = prev.find(item => item.id === product.id);
             if (existing) {
-                return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+                // Respetar el stock disponible del producto
+                const nextQty =
+                    typeof product.stock === 'number'
+                        ? Math.min(existing.quantity + 1, product.stock)
+                        : existing.quantity + 1;
+                if (nextQty === existing.quantity) return prev;
+                return prev.map(item => item.id === product.id ? { ...item, quantity: nextQty } : item);
             }
-            return [...prev, { ...product, quantity: 1 }];
+            const quantity =
+                typeof product.stock === 'number' && product.stock > 0 ? 1 : 1;
+            return [...prev, { ...product, quantity }];
         });
     };
 
@@ -60,7 +69,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             removeFromCart(productId);
             return;
         }
-        setCart(prev => prev.map(item => item.id === productId ? { ...item, quantity } : item));
+        setCart(prev =>
+            prev.map(item => {
+                if (item.id !== productId) return item;
+                const maxStock = typeof (item as any).stock === 'number' ? (item as any).stock : Infinity;
+                return { ...item, quantity: Math.min(quantity, maxStock) };
+            })
+        );
     };
 
     const clearCart = () => setCart([]);
@@ -72,7 +87,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return acc + (price * item.quantity);
     }, 0);
 
-    const deliveryFee = subtotal >= 100 ? 0 : distance * 2;
+    const deliveryFee = subtotal >= FREE_DELIVERY_THRESHOLD
+        ? 0
+        : Math.max(0, distance) * DELIVERY_COST_PER_KM;
     const total = subtotal + deliveryFee;
 
     return (
