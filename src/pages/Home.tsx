@@ -4,6 +4,7 @@ import { ShoppingBag, Star, Clock, ShieldCheck, MapPin, Mail, Phone, ChevronRigh
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { cdnImage } from '../lib/cloudinary';
 
 const Home = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -88,7 +89,7 @@ const Home = () => {
                     {filteredProducts.slice(0, 8).map((product) => (
                         <div key={product.id} className="group">
                             <div className="relative aspect-[3/4] overflow-hidden mb-4 md:mb-6 bg-[#0f0f0f] border border-white/5 rounded-sm">
-                                <img src={product.image_url} loading="lazy" decoding="async" className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt={product.name} />
+                                <img src={cdnImage(product.image_url, 600)} loading="lazy" decoding="async" className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700" alt={product.name} />
                                 {product.stock === 0 && (
                                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
                                         <span className="text-[10px] font-bold tracking-[0.4em] uppercase text-white border border-white/20 px-4 py-2">Agotado</span>

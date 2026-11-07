@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { cdnImage } from '../lib/cloudinary';
 import { Calendar, MapPin, Ticket, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -50,7 +51,7 @@ export default function Events() {
                                 <div className="flex-1 w-full aspect-[4/5] lg:aspect-square relative overflow-hidden group">
                                     {event.image_url ? (
                                         <img
-                                            src={event.image_url}
+                                            src={cdnImage(event.image_url, 900)}
                                             loading="lazy"
                                             decoding="async"
                                             className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"

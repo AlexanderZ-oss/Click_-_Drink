@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { cdnImage } from '../lib/cloudinary';
 import { Percent, Clock, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -96,7 +97,7 @@ export default function Promotions() {
                                 {/* Image */}
                                 <div className="relative h-64 overflow-hidden bg-black/40">
                                     <img
-                                        src={promo.image_url}
+                                        src={cdnImage(promo.image_url, 800)}
                                         alt={promo.title}
                                         loading="lazy"
                                         decoding="async"

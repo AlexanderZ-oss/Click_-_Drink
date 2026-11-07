@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, Edit2, X, Save, Boxes } from 'lucide-react';
 import { useToaster } from './ui/Toaster';
+import CloudinaryUploadField from './ui/CloudinaryUploadField';
 
 const ProductManager = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -264,6 +265,7 @@ const ProductManager = () => {
                                         value={formData.image_url}
                                         onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                     />
+                                    <CloudinaryUploadField value={formData.image_url} onChange={(url) => setFormData({ ...formData, image_url: url })} />
                                 </div>
                             </div>
 

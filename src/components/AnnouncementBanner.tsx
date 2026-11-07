@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { cdnImage } from '../lib/cloudinary';
 import { X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -106,7 +107,7 @@ export default function AnnouncementBanner() {
                             {/* Image */}
                             {currentBanner.image_url && (
                                 <img
-                                    src={currentBanner.image_url}
+                                    src={cdnImage(currentBanner.image_url, 200)}
                                     alt={currentBanner.title}
                                     loading="eager"
                                     decoding="async"

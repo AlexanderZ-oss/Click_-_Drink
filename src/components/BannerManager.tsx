@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToaster } from '../components/ui/Toaster';
+import CloudinaryUploadField from './ui/CloudinaryUploadField';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Image, Link as LinkIcon } from 'lucide-react';
 
 interface Banner {
@@ -214,6 +215,7 @@ export default function BannerManager() {
                                 className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]"
                                 placeholder="https://..."
                             />
+                            <CloudinaryUploadField value={formData.image_url} onChange={(url) => setFormData({ ...formData, image_url: url })} />
                         </div>
 
                         <div>

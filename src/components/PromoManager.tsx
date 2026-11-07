@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, Edit2, X, Save, Award, Percent } from 'lucide-react';
+import CloudinaryUploadField from './ui/CloudinaryUploadField';
 
 const PromoManager = () => {
     const [promos, setPromos] = useState<any[]>([]);
@@ -96,6 +97,7 @@ const PromoManager = () => {
                                 <input type="number" placeholder="% Descuento" required className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-red-500 transition-all" value={formData.discount_percent} onChange={e => setFormData({ ...formData, discount_percent: e.target.value })} />
                                 <input type="url" placeholder="URL Imagen" required className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-red-500 transition-all" value={formData.image_url} onChange={e => setFormData({ ...formData, image_url: e.target.value })} />
                             </div>
+                            <CloudinaryUploadField value={formData.image_url} onChange={(url) => setFormData({ ...formData, image_url: url })} />
                             <button type="submit" className="w-full py-5 bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:bg-red-600 transition-all">GUARDAR PROMO</button>
                         </form>
                     </div>

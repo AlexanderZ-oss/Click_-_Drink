@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { cdnImage } from '../lib/cloudinary';
 import { ShoppingBag, Search, Filter } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -81,7 +82,7 @@ export default function Catalog() {
                         >
                             <div className="relative aspect-[3/4] bg-[#0a0a0a] overflow-hidden mb-4 md:mb-8">
                                 <img
-                                    src={product.image_url}
+                                    src={cdnImage(product.image_url, 700)}
                                     loading="lazy"
                                     decoding="async"
                                     className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"

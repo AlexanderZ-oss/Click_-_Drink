@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { isCloudinaryEnabled, uploadToCloudinary } from '../lib/cloudinary';
 import { Plus, Trash2, Edit2, X, Save, Calendar, MapPin, Upload } from 'lucide-react';
 import { useToaster } from './ui/Toaster';
 
@@ -86,6 +87,20 @@ const EventManager = () => {
             }
 
             const file = e.target.files[0];
+
+            // 1) Cloudinary (CDN, no consume cuota de Supabase) si está configurado
+            if (isCloudinaryEnabled()) {
+                try {
+                    const secureUrl = await uploadToCloudinary(file);
+                    setFormData({ ...formData, image_url: secureUrl });
+                    showToast('Imagen subida a Cloudinary', 'success');
+                    return;
+                } catch (cloudErr: any) {
+                    console.warn('Cloudinary falló, usando Supabase:', cloudErr?.message);
+                }
+            }
+
+            // 2) Respaldo: Supabase Storage
             const fileExt = file.name.split('.').pop();
             const fileName = `${Math.random()}.${fileExt}`;
             const filePath = `${fileName}`;

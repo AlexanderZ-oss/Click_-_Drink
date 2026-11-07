@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { cdnImage } from '../lib/cloudinary';
 import { Trash2, Plus, Minus, MapPin, Truck, ChevronRight, ShoppingBag, CreditCard, ChevronDown, CheckCircle2, Lock, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -248,7 +249,7 @@ const Cart = () => {
                                     className="bg-[#111] border border-white/5 p-4 rounded-[2rem] flex items-center gap-6 group hover:border-white/10 transition-all"
                                 >
                                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden shrink-0 bg-[#000]">
-                                        <img src={item.image_url} loading="lazy" decoding="async" alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                        <img src={cdnImage(item.image_url, 300)} loading="lazy" decoding="async" alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     </div>
 
                                     <div className="flex-1 min-w-0">
