@@ -1,3 +1,9 @@
 User-agent: *
 Allow: /
+# Páginas privadas o sin valor de búsqueda: fuera del índice
+Disallow: /admin
+Disallow: /cart
+Disallow: /debug
+Disallow: /api/
+
 Sitemap: https://ferest-premium.vercel.app/sitemap.xml
