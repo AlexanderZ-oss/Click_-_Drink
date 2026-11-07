@@ -25,21 +25,11 @@ export default function AnnouncementBanner() {
     useEffect(() => {
         fetchBanners();
 
-        // Subscribe to banner changes
-        const channel = supabase
-            .channel('banners')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'banners' },
-                () => {
-                    fetchBanners();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        // Sin Realtime: cada usuario abría 1 conexión WebSocket permanente.
+        // Con 200+ usuarios/minuto ese límite se agota; refrescamos al montar
+        // y cada 2 minutos (el admin sigue sincronizando en <1 min).
+        const refresh = setInterval(() => fetchBanners(), 120000);
+        return () => clearInterval(refresh);
     }, []);
 
     useEffect(() => {
@@ -118,6 +108,8 @@ export default function AnnouncementBanner() {
                                 <img
                                     src={currentBanner.image_url}
                                     alt={currentBanner.title}
+                                    loading="eager"
+                                    decoding="async"
                                     className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                                 />
                             )}

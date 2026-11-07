@@ -51,6 +51,8 @@ export default function Events() {
                                     {event.image_url ? (
                                         <img
                                             src={event.image_url}
+                                            loading="lazy"
+                                            decoding="async"
                                             className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
                                             alt={event.title}
                                         />
