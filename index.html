@@ -18,6 +18,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0a0a0a" />
 
+    <!-- PWA: la web se puede instalar como app en el celular -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FEREST" />
+
     <!-- Canonical: evita contenido duplicado y consolida el posicionamiento -->
     <link rel="canonical" href="https://ferest.vercel.app/" />
     <!-- Preconexión a fuentes: acelera la carga inicial (Core Web Vitals) -->
@@ -222,6 +229,14 @@
         };
     </script>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Registro del Service Worker: activa el modo offline y la instalación como app -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () { /* sin SW, la web funciona igual */ });
+            });
+        }
+    </script>
 </body>
 
 </html>

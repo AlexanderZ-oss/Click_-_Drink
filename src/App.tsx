@@ -18,6 +18,7 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToasterProvider } from './components/ui/Toaster';
 import WhatsAppButton from './components/WhatsAppButton';
+import InstallAppButton from './components/InstallAppButton';
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -67,6 +68,7 @@ function App() {
                             </main>
                             <Footer />
                             <WhatsAppButton />
+                            <InstallAppButton />
                         </div>
                     </Router>
                 </CartProvider>
