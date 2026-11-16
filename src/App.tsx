@@ -3,24 +3,35 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import Home from './pages/Home';
-import Catalog from './pages/Catalog';
-import Promotions from './pages/Promotions';
-import Nightclubs from './pages/Nightclubs';
-import Cart from './pages/Cart';
-import Contact from './pages/Contact';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Events from './pages/Events';
-import Debug from './pages/Debug';
 import { Toaster } from './components/ui/Toaster';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToasterProvider } from './components/ui/Toaster';
 import WhatsAppButton from './components/WhatsAppButton';
 import InstallAppButton from './components/InstallAppButton';
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+
+// Code splitting: cada página se descarga solo cuando se visita.
+// Home se importa directo (es lo primero que ve el cliente).
+const Catalog = lazy(() => import('./pages/Catalog'));
+const Promotions = lazy(() => import('./pages/Promotions'));
+const Nightclubs = lazy(() => import('./pages/Nightclubs'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Events = lazy(() => import('./pages/Events'));
+const Debug = lazy(() => import('./pages/Debug'));
+
+function PageLoader() {
+    return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+            <div className="w-10 h-10 border-2 border-[#c5a059] border-t-transparent rounded-full animate-spin" />
+        </div>
+    );
+}
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -51,7 +62,8 @@ function App() {
                             <AnnouncementBanner />
                             <Navbar />
                             <main>
-                                <Routes>
+                                <Suspense fallback={<PageLoader />}>
+                                    <Routes>
                                     <Route path="/" element={<Home />} />
                                     <Route path="/catalog" element={<Catalog />} />
                                     <Route path="/promotions" element={<Promotions />} />
@@ -64,7 +76,8 @@ function App() {
                                     <Route path="/admin" element={<Admin />} />
                                     <Route path="/debug" element={<Debug />} />
                                     <Route path="*" element={<NotFound />} />
-                                </Routes>
+                                    </Routes>
+                                </Suspense>
                             </main>
                             <Footer />
                             <WhatsAppButton />
