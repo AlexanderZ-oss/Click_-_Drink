@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToasterProvider } from './components/ui/Toaster';
 import WhatsAppButton from './components/WhatsAppButton';
 import InstallAppButton from './components/InstallAppButton';
+import AppGate from './components/AppGate';
 import { Suspense, lazy, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -58,6 +59,7 @@ function App() {
                 <CartProvider>
                     <Router>
                         <ScrollToTop />
+                        <AppGate>
                         <div className="min-h-screen bg-[#0a0a0a] text-white">
                             <AnnouncementBanner />
                             <Navbar />
@@ -83,6 +85,7 @@ function App() {
                             <WhatsAppButton />
                             <InstallAppButton />
                         </div>
+                        </AppGate>
                     </Router>
                 </CartProvider>
             </ToasterProvider>

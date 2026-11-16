@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Mail, Lock, User, CheckCircle, FileText } from 'lucide-react';
+import { Mail, Lock, User, CheckCircle, FileText, Smartphone } from 'lucide-react';
 
 const Register = () => {
+    const [searchParams] = useSearchParams();
+    const fromApp = searchParams.get('from') === 'app';
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -78,6 +80,11 @@ const Register = () => {
                                 <p className="border-y border-white/5 py-6">
                                     "Te damos la bienvenida oficial a la <span className="text-[#c5a059] font-medium uppercase tracking-widest">Cata de Trujillo</span>."
                                 </p>
+                                {fromApp && (
+                                    <p className="text-sm text-[#c5a059]">
+                                        Ahora vuelve a la <span className="font-bold">app FEREST</span> e inicia sesión con tu correo y contraseña.
+                                    </p>
+                                )}
                                 <p className="text-sm italic text-green-500">
                                     Se ha enviado un mensaje de bienvenida a tu correo.
                                 </p>
@@ -105,6 +112,16 @@ const Register = () => {
                     <h1 className="text-5xl font-serif text-white mb-4">Registro</h1>
                     <p className="text-gray-500 font-light uppercase tracking-widest text-[10px]">Únete a nuestra reserva exclusiva</p>
                 </div>
+
+                {fromApp && (
+                    <div className="flex items-start gap-3 border border-[#c5a059]/30 bg-[#c5a059]/10 rounded-xl p-4 mb-8 text-left">
+                        <Smartphone size={18} className="text-[#c5a059] shrink-0 mt-0.5" />
+                        <p className="text-[11px] leading-relaxed text-gray-300">
+                            Estás creando tu cuenta para usar la <span className="text-[#c5a059] font-bold">app FEREST</span>.
+                            Cuando termines el registro, <span className="text-white font-bold">vuelve a la app e inicia sesión</span> con tu correo y contraseña.
+                        </p>
+                    </div>
+                )}
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 mb-8 text-[11px] font-bold uppercase tracking-widest text-center">
