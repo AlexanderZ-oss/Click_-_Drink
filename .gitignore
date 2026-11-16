@@ -4,3 +4,5 @@ dist
 dist-ssr
 *.local
 .env
+# Claves de firma y APKs: nunca subir al repo (la keystore firma las actualizaciones de la app)
+android-app/

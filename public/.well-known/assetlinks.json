@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.ferest.premium",
+        "sha256_cert_fingerprints": ["AB:B2:C0:A9:5F:BF:1F:8F:0A:18:11:55:06:A8:5C:53:1C:22:9B:A7:C3:F5:61:B6:1F:51:8D:C9:D9:AB:93:7B"]
+      }
+    }]
