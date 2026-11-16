@@ -6,4 +6,4 @@ Disallow: /cart
 Disallow: /debug
 Disallow: /api/
 
-Sitemap: https://ferest-premium.vercel.app/sitemap.xml
+Sitemap: https://ferest.vercel.app/sitemap.xml
