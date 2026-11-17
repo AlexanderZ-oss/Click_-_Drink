@@ -23,6 +23,13 @@ const ProductManager = () => {
         fetchProducts();
     }, []);
 
+    // Bloquea el scroll de la pagina mientras el modal esta abierto
+    // (evita que la rueda del mouse haga scroll de fondo en vez del formulario).
+    useEffect(() => {
+        document.body.style.overflow = isModalOpen ? 'hidden' : '';
+        return () => { document.body.style.overflow = ''; };
+    }, [isModalOpen]);
+
     const fetchProducts = async () => {
         const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
         if (data) setProducts(data);
@@ -169,7 +176,7 @@ const ProductManager = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-[#111] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200 h-[90vh] overflow-y-auto">
+                    <div className="relative bg-[#111] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto overscroll-contain">
                         <div className="flex justify-between items-center mb-8">
                             <h3 className="text-2xl font-black text-white italic uppercase">
                                 {editingProduct ? 'Editar' : 'Nuevo'} <span className="text-[#d4af37]">Licor</span>
@@ -278,9 +285,11 @@ const ProductManager = () => {
                                 ></textarea>
                             </div>
 
-                            <button type="submit" className="w-full btn-premium py-5 flex items-center justify-center gap-3 mt-4 italic font-black text-sm uppercase">
-                                <Save size={20} /> {editingProduct ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO'}
-                            </button>
+                            <div className="sticky bottom-0 -mx-10 px-10 pt-4 pb-1 bg-[#111]">
+                                <button type="submit" className="w-full btn-premium py-5 flex items-center justify-center gap-3 italic font-black text-sm uppercase">
+                                    <Save size={20} /> {editingProduct ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
