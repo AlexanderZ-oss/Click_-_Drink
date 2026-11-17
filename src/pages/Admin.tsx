@@ -9,6 +9,7 @@ import PromoManager from '../components/PromoManager';
 import BannerManager from '../components/BannerManager';
 
 import EventManager from '../components/EventManager';
+import SalesReport from '../components/SalesReport';
 import StoreConfigManager from '../components/StoreConfigManager';
 import { isAdminEmail } from '../lib/config';
 
@@ -254,20 +255,7 @@ const Admin = () => {
                         {activeTab === 'banners' && <BannerManager />}
                         {activeTab === 'events' && <EventManager />}
                         {activeTab === 'config' && <StoreConfigManager />}
-                        {activeTab === 'sales' && (
-                            <div className="border border-white/5 bg-[#080808] rounded-lg p-10">
-                                <h2 className="text-2xl font-serif italic mb-10">Bitácora de Ventas</h2>
-                                <div className="space-y-4">
-                                    {orders.map(order => (
-                                        <div key={order.id} className="p-6 border border-white/5 flex justify-between items-center hover:border-[#c5a059]/20 transition-all rounded">
-                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-500">#{String(order.id).slice(0, 12)}</span>
-                                            <span className="text-sm font-bold text-white">S/ {order.total.toFixed(2)}</span>
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-[#c5a059] bg-[#c5a059]/5 px-3 py-1">{order.status}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                        {activeTab === 'sales' && <SalesReport />}
                     </div>
                 </main>
             </div>

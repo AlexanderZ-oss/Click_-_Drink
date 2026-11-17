@@ -66,3 +66,23 @@ export const uploadToCloudinary = async (file: File): Promise<string> => {
     const data = await res.json();
     return data.secure_url as string;
 };
+
+/**
+ * Subida con fallback automático:
+ *  - Si Cloudinary está configurado -> sube ahí (CDN global, comprimido).
+ *  - Si NO -> sube al bucket público "images" de Supabase Storage.
+ * En ambos casos devuelve una URL pública lista para usar en image_url.
+ */
+export const uploadImage = async (file: File): Promise<string> => {
+    if (isCloudinaryEnabled()) return uploadToCloudinary(file);
+
+    const { supabase } = await import('./supabase');
+    const path = `productos/${Date.now()}_${file.name.replace(/[^\w.\-]/g, '_')}`;
+    const { error } = await supabase.storage.from('images').upload(path, file, {
+        cacheControl: '3600',
+        upsert: false
+    });
+    if (error) throw new Error(error.message);
+    const { data } = supabase.storage.from('images').getPublicUrl(path);
+    return data.publicUrl;
+};
