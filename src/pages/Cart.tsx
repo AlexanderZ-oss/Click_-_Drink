@@ -143,30 +143,41 @@ const Cart = () => {
             return;
         }
 
-        const { data, error } = await supabase.from('orders').insert([{
-            user_id: user.id,
-            customer_email: user.email,
-            total: total,
-            // El pedido inicia como PENDIENTE hasta que el pago se confirme en el servidor.
-            // 'paid' solo debe asignarse tras un cobro real verificado en el panel admin.
-            status: 'pending',
-            payment_method_id: paymentMethodId || null,
-            items: cart,
-            delivery_address: details.address,
-            customer_phone: details.phone,
-            delivery_fee: deliveryFee,
-            invoice_type: invoiceType,
-            ruc_dni: details.ruc_dni,
-            company_name: details.company,
-            delivery_time: details.delivery_time
-        }]).select().single();
+        // Compra ATOMICA via RPC create_order: la base de datos valida y descuenta
+        // el stock con bloqueo de fila antes de crear el pedido (sin sobreturnas).
+        // Si otro comprador se llevo la ultima unidad, aqui llega el error AGOTADO.
+        const { data: newOrderId, error } = await supabase.rpc('create_order', {
+            p_items: cart.map(i => ({
+                id: i.id,
+                name: i.name,
+                price: i.price,
+                wholesale_price: i.wholesale_price ?? null,
+                wholesale_min: i.wholesale_min ?? null,
+                quantity: i.quantity
+            })),
+            p_total: total,
+            p_delivery_address: details.address,
+            p_customer_phone: details.phone,
+            p_delivery_fee: deliveryFee,
+            p_invoice_type: invoiceType,
+            p_ruc_dni: details.ruc_dni,
+            p_company_name: details.company,
+            p_delivery_time: details.delivery_time,
+            p_notes: null
+        });
 
         if (error) {
             console.error('Order Error:', error);
-            showToast('Error al registrar pedido: ' + error.message, 'error');
+            if (error.message.includes('AGOTADO')) {
+                showToast('Lo sentimos: alguien acaba de llevarse la ultima unidad de un producto de tu carrito. Actualiza el catalogo e intenta de nuevo.', 'error');
+            } else if (error.message.includes('no coincide')) {
+                showToast('Los precios cambiaron. Actualiza la pagina y vuelve a intentar.', 'error');
+            } else {
+                showToast('Error al registrar pedido: ' + error.message, 'error');
+            }
             setIsPaying(false);
         } else {
-            setOrderSuccess(data.id);
+            setOrderSuccess(String(newOrderId));
             clearCart();
         }
     };
