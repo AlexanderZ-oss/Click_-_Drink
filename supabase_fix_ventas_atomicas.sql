@@ -93,9 +93,10 @@ BEGIN
     UPDATE public.products SET stock = stock - v_qty WHERE id = v_pid;
   END LOOP;
 
-  -- El total lo calcula el servidor, no el cliente (nadie manipula precios)
-  IF p_total IS NOT NULL AND ABS(p_total - v_calc_total) > 0.01 THEN
-    RAISE EXCEPTION 'El total del pedido no coincide con los precios (S/ % calculado)', v_calc_total;
+  -- El total lo calcula el servidor, no el cliente (nadie manipula precios).
+  -- El total del pedido incluye el costo de envio, igual que en el carrito.
+  IF p_total IS NOT NULL AND ABS(p_total - (v_calc_total + COALESCE(p_delivery_fee, 0))) > 0.01 THEN
+    RAISE EXCEPTION 'El total del pedido no coincide (productos S/ % + envio S/ % = S/ %)', v_calc_total, COALESCE(p_delivery_fee, 0), v_calc_total + COALESCE(p_delivery_fee, 0);
   END IF;
 
   INSERT INTO public.orders (
@@ -105,7 +106,7 @@ BEGIN
   ) VALUES (
     v_uid, v_email, v_fullname, p_customer_phone,
     p_delivery_address, p_delivery_fee, p_invoice_type, p_ruc_dni,
-    p_company_name, p_delivery_time, v_calc_total, 'pending', p_items, p_payment_method_id, p_notes
+    p_company_name, p_delivery_time, v_calc_total + COALESCE(p_delivery_fee, 0), 'pending', p_items, p_payment_method_id, p_notes
   ) RETURNING id INTO v_oid;
 
   RETURN v_oid;
