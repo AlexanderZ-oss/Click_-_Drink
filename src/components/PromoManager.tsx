@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Edit2, X, Save, Award, Percent } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Award, Percent } from 'lucide-react';
 import CloudinaryUploadField from './ui/CloudinaryUploadField';
+import Modal from './ui/Modal';
 
 const PromoManager = () => {
     const [promos, setPromos] = useState<any[]>([]);
@@ -85,11 +86,13 @@ const PromoManager = () => {
                 ))}
             </div>
 
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-[#111] border border-white/10 w-full max-w-xl rounded-[3rem] p-10">
-                        <h3 className="text-2xl font-black mb-8 italic uppercase text-white">Configurar <span className="text-red-500">Promoción</span></h3>
+            {/* Modal: shell compartido en ui/Modal.tsx; aqui solo el formulario */}
+            <Modal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={<>Configurar <span className="text-red-500">Promoción</span></>}
+                maxWidth="max-w-xl"
+            >
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <input type="text" placeholder="Título" required className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-red-500 transition-all" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
                             <textarea placeholder="Descripción" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none h-24 resize-none focus:border-red-500 transition-all" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
@@ -100,9 +103,7 @@ const PromoManager = () => {
                             <CloudinaryUploadField value={formData.image_url} onChange={(url) => setFormData({ ...formData, image_url: url })} />
                             <button type="submit" className="w-full py-5 bg-red-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-2xl hover:bg-red-600 transition-all">GUARDAR PROMO</button>
                         </form>
-                    </div>
-                </div>
-            )}
+            </Modal>
         </div>
     );
 };

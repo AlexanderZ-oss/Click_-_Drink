@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Edit2, X, Save, Boxes } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Boxes } from 'lucide-react';
 import { useToaster } from './ui/Toaster';
 import CloudinaryUploadField from './ui/CloudinaryUploadField';
+import Modal from './ui/Modal';
 
 const ProductManager = () => {
     const [products, setProducts] = useState<any[]>([]);
@@ -22,13 +23,6 @@ const ProductManager = () => {
     useEffect(() => {
         fetchProducts();
     }, []);
-
-    // Bloquea el scroll de la pagina mientras el modal esta abierto
-    // (evita que la rueda del mouse haga scroll de fondo en vez del formulario).
-    useEffect(() => {
-        document.body.style.overflow = isModalOpen ? 'hidden' : '';
-        return () => { document.body.style.overflow = ''; };
-    }, [isModalOpen]);
 
     const fetchProducts = async () => {
         const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
@@ -172,28 +166,26 @@ const ProductManager = () => {
                 </table>
             </div>
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain">
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative min-h-full flex items-center justify-center p-4">
-                        <div className="relative bg-[#111] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-2xl font-black text-white italic uppercase">
-                                {editingProduct ? 'Editar' : 'Nuevo'} <span className="text-[#d4af37]">Licor</span>
-                            </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full text-gray-500 hover:text-white transition-colors">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Modal: el shell (portal, scroll, ESC, bloqueo) vive en ui/Modal.tsx.
+                Aqui solo va el formulario del manager. */}
+            <Modal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={<>{editingProduct ? 'Editar' : 'Nuevo'} <span className="text-[#d4af37]">Licor</span></>}
+                maxWidth="max-w-2xl"
+                footer={
+                    <button type="submit" form="form-producto" className="w-full btn-premium py-5 flex items-center justify-center gap-3 italic font-black text-sm uppercase">
+                        <Save size={20} /> {editingProduct ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO'}
+                    </button>
+                }
+            >
+                        <form id="form-producto" onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Nombre del Producto</label>
                                     <input
                                         type="text" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
+                                        className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
@@ -204,7 +196,7 @@ const ProductManager = () => {
                                         list="categories-list"
                                         type="text" required
                                         placeholder="Seleccionar o escribir..."
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold uppercase"
+                                        className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold uppercase"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value.toUpperCase() })}
                                     />
@@ -229,7 +221,7 @@ const ProductManager = () => {
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Precio Menudeo (S/)</label>
                                     <input
                                         type="number" step="0.01" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
+                                        className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     />
@@ -260,7 +252,7 @@ const ProductManager = () => {
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Stock Disponible</label>
                                     <input
                                         type="number" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
+                                        className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
                                         value={formData.stock}
                                         onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                                     />
@@ -269,7 +261,7 @@ const ProductManager = () => {
                                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">URL Imagen del Producto</label>
                                     <input
                                         type="url" required
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
+                                        className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all font-bold"
                                         value={formData.image_url}
                                         onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                                     />
@@ -280,22 +272,13 @@ const ProductManager = () => {
                             <div>
                                 <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Descripción Breve</label>
                                 <textarea
-                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all h-32 resize-none font-bold italic"
+                                    className="w-full bg-[#1a1a1a] border border-white/25 rounded-2xl px-5 py-4 text-sm focus:border-[#d4af37] outline-none transition-all h-32 resize-none font-bold italic"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 ></textarea>
                             </div>
-
-                            <div className="sticky bottom-0 -mx-10 px-10 pt-4 pb-1 bg-[#111]">
-                                <button type="submit" className="w-full btn-premium py-5 flex items-center justify-center gap-3 italic font-black text-sm uppercase">
-                                    <Save size={20} /> {editingProduct ? 'GUARDAR CAMBIOS' : 'CREAR PRODUCTO'}
-                                </button>
-                            </div>
                         </form>
-                        </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
         </div>
     );
 };

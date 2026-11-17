@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { isCloudinaryEnabled, uploadToCloudinary } from '../lib/cloudinary';
-import { Plus, Trash2, Edit2, X, Save, Calendar, MapPin, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, Calendar, MapPin, Upload } from 'lucide-react';
 import { useToaster } from './ui/Toaster';
+import Modal from './ui/Modal';
 
 const EventManager = () => {
     const [events, setEvents] = useState<any[]>([]);
@@ -168,40 +169,36 @@ const EventManager = () => {
                 ))}
             </div>
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain">
-                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative min-h-full flex items-center justify-center p-4">
-                        <div className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-lg p-10">
-                        <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-2xl font-serif text-white italic">{editingEvent ? 'Editar' : 'Programar'} Evento</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white"><X size={24} /></button>
-                        </div>
-
+            {/* Modal: shell compartido en ui/Modal.tsx; aqui solo el formulario */}
+            <Modal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={<>{editingEvent ? 'Editar' : 'Programar'} <span className="text-[#d4af37]">Evento</span></>}
+                maxWidth="max-w-2xl"
+            >
                         <form onSubmit={handleSubmit} className="space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Título del Evento</label>
-                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                                    <input required type="text" className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Fecha y Hora</label>
-                                    <input required type="datetime-local" className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
+                                    <input required type="datetime-local" className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Ubicación</label>
-                                    <input required type="text" className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
+                                    <input required type="text" className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">URL Imagen</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
-                                            className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light"
+                                            className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light"
                                             value={formData.image_url}
                                             onChange={e => setFormData({ ...formData, image_url: e.target.value })}
                                             placeholder="https://..."
@@ -216,22 +213,19 @@ const EventManager = () => {
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Descripción</label>
-                                <textarea className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light h-32 resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                                <textarea className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light h-32 resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Link de Tickets (Opcional)</label>
-                                <input type="text" className="w-full bg-white/5 border border-white/10 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.ticket_link} onChange={e => setFormData({ ...formData, ticket_link: e.target.value })} />
+                                <input type="text" className="w-full bg-[#1a1a1a] border border-white/25 rounded py-3 px-4 text-white focus:border-[#c5a059] outline-none font-light" value={formData.ticket_link} onChange={e => setFormData({ ...formData, ticket_link: e.target.value })} />
                             </div>
 
                             <button type="submit" className="w-full btn-premium py-5">
                                 <Save size={20} className="mr-2 inline" /> {editingEvent ? 'Guardar Cambios' : 'Publicar Evento'}
                             </button>
                         </form>
-                        </div>
-                    </div>
-                </div>
-            )}
+            </Modal>
         </div>
     );
 };
