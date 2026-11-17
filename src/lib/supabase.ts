@@ -6,8 +6,8 @@ import { createClient } from '@supabase/supabase-js'
  */
 
 // Credentials provided by the administrator
-const SYS_URL = 'https://nvojmgeooevmqbuttpxh.supabase.co';
-const SYS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52b2ptZ2Vvb2V2bXFidXR0cHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTg3MDcsImV4cCI6MjA4Mzc3NDcwN30.M2SbkrSYRM2f4YxWLV1TrHFBUbyQRUSpeXFobEt9LZY';
+const SYS_URL = 'https://iaaavtbgfwatxvvpiphn.supabase.co';
+const SYS_KEY = 'sb_publishable_1hsAVeQdmxw2UkQHHXbLaA_inyxKSiz';
 
 const dbUrl = import.meta.env.VITE_SUPABASE_URL || SYS_URL;
 const dbKey = import.meta.env.VITE_SUPABASE_ANON_KEY || SYS_KEY;
