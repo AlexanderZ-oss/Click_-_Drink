@@ -170,9 +170,10 @@ const EventManager = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-lg p-10 max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain">
+                    <div className="fixed inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="relative min-h-full flex items-center justify-center p-4">
+                        <div className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-2xl rounded-lg p-10">
                         <div className="flex justify-between items-center mb-8">
                             <h3 className="text-2xl font-serif text-white italic">{editingEvent ? 'Editar' : 'Programar'} Evento</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-white"><X size={24} /></button>
@@ -227,6 +228,7 @@ const EventManager = () => {
                                 <Save size={20} className="mr-2 inline" /> {editingEvent ? 'Guardar Cambios' : 'Publicar Evento'}
                             </button>
                         </form>
+                        </div>
                     </div>
                 </div>
             )}

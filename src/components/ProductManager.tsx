@@ -174,9 +174,10 @@ const ProductManager = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="relative bg-[#111] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto overscroll-contain">
+                <div className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain">
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
+                    <div className="relative min-h-full flex items-center justify-center p-4">
+                        <div className="relative bg-[#111] border border-white/10 w-full max-w-2xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-8">
                             <h3 className="text-2xl font-black text-white italic uppercase">
                                 {editingProduct ? 'Editar' : 'Nuevo'} <span className="text-[#d4af37]">Licor</span>
@@ -291,6 +292,7 @@ const ProductManager = () => {
                                 </button>
                             </div>
                         </form>
+                        </div>
                     </div>
                 </div>
             )}
