@@ -228,7 +228,7 @@ const Admin = () => {
                                                     <DollarSign size={16} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs font-bold text-white uppercase tracking-tighter italic">#{order.id.slice(0, 8)}</p>
+                                                    <p className="text-xs font-bold text-white uppercase tracking-tighter italic">#{String(order.id).slice(0, 8)}</p>
                                                     <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{new Date(order.created_at).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
@@ -260,7 +260,7 @@ const Admin = () => {
                                 <div className="space-y-4">
                                     {orders.map(order => (
                                         <div key={order.id} className="p-6 border border-white/5 flex justify-between items-center hover:border-[#c5a059]/20 transition-all rounded">
-                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-500">#{order.id.slice(0, 12)}</span>
+                                            <span className="text-[10px] font-bold tracking-widest uppercase text-gray-500">#{String(order.id).slice(0, 12)}</span>
                                             <span className="text-sm font-bold text-white">S/ {order.total.toFixed(2)}</span>
                                             <span className="text-[9px] font-black uppercase tracking-widest text-[#c5a059] bg-[#c5a059]/5 px-3 py-1">{order.status}</span>
                                         </div>
