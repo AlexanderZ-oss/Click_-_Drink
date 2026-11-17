@@ -1,13 +1,13 @@
-
+﻿
 import { createClient } from '@supabase/supabase-js'
 
-const SYS_URL = 'https://nvojmgeooevmqbuttpxh.supabase.co';
-const SYS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52b2ptZ2Vvb2V2bXFidXR0cHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTg3MDcsImV4cCI6MjA4Mzc3NDcwN30.M2SbkrSYRM2f4YxWLV1TrHFBUbyQRUSpeXFobEt9LZY';
+const SYS_URL = 'https://iaaavtbgfwatxvvpiphn.supabase.co';
+const SYS_KEY = 'sb_publishable_1hsAVeQdmxw2UkQHHXbLaA_inyxKSiz';
 
 const supabase = createClient(SYS_URL, SYS_KEY);
 
 async function checkAndFixAdmin() {
-    console.log('🔍 Checking admin status for leninzumaran0@gmail.com...');
+    console.log('ðŸ” Checking admin status for leninzumaran0@gmail.com...');
 
     // 1. Get User ID from Auth
     // Since we can't easily access auth.users table directly as anon, we rely on profiles.
@@ -20,33 +20,34 @@ async function checkAndFixAdmin() {
         .eq('email', 'leninzumaran0@gmail.com');
 
     if (error) {
-        console.error('❌ Error fetching profiles:', error);
+        console.error('âŒ Error fetching profiles:', error);
         return;
     }
 
     if (!profiles || profiles.length === 0) {
-        console.error('❌ No profile found for leninzumaran9@gmail.com');
+        console.error('âŒ No profile found for leninzumaran9@gmail.com');
         console.log('   Note: The user must sign up first for a profile to exist, unless we manually create it.');
     } else {
         const profile = profiles[0];
-        console.log('👤 Profile found:', profile);
+        console.log('ðŸ‘¤ Profile found:', profile);
 
         if (profile.role !== 'admin') {
-            console.log('⚠️ Role is not admin. Updating to admin...');
+            console.log('âš ï¸ Role is not admin. Updating to admin...');
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ role: 'admin' })
                 .eq('id', profile.id);
 
             if (updateError) {
-                console.error('❌ Failed to update role:', updateError);
+                console.error('âŒ Failed to update role:', updateError);
             } else {
-                console.log('✅ Role updated to ADMIN successfully.');
+                console.log('âœ… Role updated to ADMIN successfully.');
             }
         } else {
-            console.log('✅ User is already ADMIN.');
+            console.log('âœ… User is already ADMIN.');
         }
     }
 }
 
 checkAndFixAdmin();
+

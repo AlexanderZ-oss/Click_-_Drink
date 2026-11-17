@@ -1,8 +1,8 @@
-
+﻿
 import { createClient } from '@supabase/supabase-js'
 
-const SYS_URL = 'https://nvojmgeooevmqbuttpxh.supabase.co';
-const SYS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52b2ptZ2Vvb2V2bXFidXR0cHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTg3MDcsImV4cCI6MjA4Mzc3NDcwN30.M2SbkrSYRM2f4YxWLV1TrHFBUbyQRUSpeXFobEt9LZY';
+const SYS_URL = 'https://iaaavtbgfwatxvvpiphn.supabase.co';
+const SYS_KEY = 'sb_publishable_1hsAVeQdmxw2UkQHHXbLaA_inyxKSiz';
 
 const supabase = createClient(SYS_URL, SYS_KEY);
 
@@ -10,7 +10,7 @@ async function checkAdmin() {
     const email = 'leninzumaran0@gmail.com';
     const password = '74814101';
 
-    console.log(`🔍 Probando credenciales para: ${email}`);
+    console.log(`ðŸ” Probando credenciales para: ${email}`);
 
     // 1. Intentar Loguear
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
@@ -19,17 +19,17 @@ async function checkAdmin() {
     });
 
     if (signInError) {
-        console.log('❌ Error al iniciar sesión:', signInError.message);
+        console.log('âŒ Error al iniciar sesiÃ³n:', signInError.message);
 
         if (signInError.message.includes('Email not confirmed')) {
-            console.log('💡 DIAGNÓSTICO: El correo no ha sido confirmado.');
+            console.log('ðŸ’¡ DIAGNÃ“STICO: El correo no ha sido confirmado.');
             console.log('   ACCION: Debes ir al Dashboard de Supabase -> Authorization -> Settings -> "Confirm Email" y DESACTIVARLO.');
             return;
         }
 
         if (signInError.message.includes('Invalid login credentials')) {
-            console.log('💡 DIAGNÓSTICO: Usuario no existe o contraseña incorrecta.');
-            console.log('   Intentando registrar automáticamente...');
+            console.log('ðŸ’¡ DIAGNÃ“STICO: Usuario no existe o contraseÃ±a incorrecta.');
+            console.log('   Intentando registrar automÃ¡ticamente...');
 
             // 2. Intentar Registrar
             const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -41,19 +41,19 @@ async function checkAdmin() {
             });
 
             if (signUpError) {
-                console.log('❌ Error al registrar:', signUpError.message);
+                console.log('âŒ Error al registrar:', signUpError.message);
             } else {
-                console.log('✅ Intento de registro exitoso.');
+                console.log('âœ… Intento de registro exitoso.');
                 if (!signUpData.session) {
-                    console.log('⚠️ ADVERTENCIA: Se registró pero requiere confirmación de email.');
+                    console.log('âš ï¸ ADVERTENCIA: Se registrÃ³ pero requiere confirmaciÃ³n de email.');
                     console.log('   ACCION: Desactiva "Confirm Email" en Supabase Dashboard.');
                 } else {
-                    console.log('🎊 Registro completedo y sesión iniciada! Ya puedes entrar.');
+                    console.log('ðŸŽŠ Registro completedo y sesiÃ³n iniciada! Ya puedes entrar.');
                 }
             }
         }
     } else {
-        console.log('✅ ¡Credenciales correctas! El usuario existe y puede entrar.');
+        console.log('âœ… Â¡Credenciales correctas! El usuario existe y puede entrar.');
         console.log('ID Usuario:', signInData.user.id);
 
         // 3. Verificar si tiene el ROL de admin en la tabla profiles
@@ -64,17 +64,18 @@ async function checkAdmin() {
             .single();
 
         if (profile?.role !== 'admin') {
-            console.log('⚠️ El perfil no tiene rol "admin". Actualizando...');
+            console.log('âš ï¸ El perfil no tiene rol "admin". Actualizando...');
             const { error: updateError } = await supabase
                 .from('profiles')
                 .update({ role: 'admin' })
                 .eq('id', signInData.user.id);
-            if (updateError) console.log('❌ Error actualizando rol:', updateError.message);
-            else console.log('✅ Rol de ADMIN asignado correctamente.');
+            if (updateError) console.log('âŒ Error actualizando rol:', updateError.message);
+            else console.log('âœ… Rol de ADMIN asignado correctamente.');
         } else {
-            console.log('🤴 Usuario ya cuenta con rol ADMIN en la tabla profiles.');
+            console.log('ðŸ¤´ Usuario ya cuenta con rol ADMIN en la tabla profiles.');
         }
     }
 }
 
 checkAdmin();
+

@@ -1,13 +1,13 @@
-
+﻿
 import { createClient } from '@supabase/supabase-js'
 
-const SYS_URL = 'https://nvojmgeooevmqbuttpxh.supabase.co';
-const SYS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52b2ptZ2Vvb2V2bXFidXR0cHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTg3MDcsImV4cCI6MjA4Mzc3NDcwN30.M2SbkrSYRM2f4YxWLV1TrHFBUbyQRUSpeXFobEt9LZY';
+const SYS_URL = 'https://iaaavtbgfwatxvvpiphn.supabase.co';
+const SYS_KEY = 'sb_publishable_1hsAVeQdmxw2UkQHHXbLaA_inyxKSiz';
 
 const supabase = createClient(SYS_URL, SYS_KEY);
 
 async function run() {
-    console.log('🔄 Iniciando prueba de conexión con Supabase...');
+    console.log('ðŸ”„ Iniciando prueba de conexiÃ³n con Supabase...');
 
     const start = Date.now();
 
@@ -20,21 +20,21 @@ async function run() {
     const duration = Date.now() - start;
 
     if (error) {
-        console.error('❌ Error de conexión:', error.message);
+        console.error('âŒ Error de conexiÃ³n:', error.message);
         console.error('   Detalles:', error);
         if (error.code === 'PGRST204') {
-            console.error('   Nota: La conexión funciona, pero la tabla no existe.');
+            console.error('   Nota: La conexiÃ³n funciona, pero la tabla no existe.');
         }
     } else {
-        console.log(`✅ Conexión establecida exitosamente en ${duration}ms`);
+        console.log(`âœ… ConexiÃ³n establecida exitosamente en ${duration}ms`);
         console.log(`   Status: ${status} ${statusText}`);
 
         // Also check Authentication service
         const { data: authData, error: authError } = await supabase.auth.getSession();
         if (authError) {
-            console.log('⚠️ Servicio de Auth accesible pero con advertencia:', authError.message);
+            console.log('âš ï¸ Servicio de Auth accesible pero con advertencia:', authError.message);
         } else {
-            console.log('✅ Servicio de Autenticación operativo');
+            console.log('âœ… Servicio de AutenticaciÃ³n operativo');
         }
 
         console.log('\n--- Resumen de Tablas ---');
@@ -43,3 +43,4 @@ async function run() {
 }
 
 run();
+
