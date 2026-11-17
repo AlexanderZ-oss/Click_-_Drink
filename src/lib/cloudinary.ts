@@ -16,8 +16,8 @@
 
 const env = (import.meta as any).env || {};
 
-export const CLOUDINARY_CLOUD_NAME: string = env.VITE_CLOUDINARY_CLOUD_NAME || '';
-export const CLOUDINARY_UPLOAD_PRESET: string = env.VITE_CLOUDINARY_UPLOAD_PRESET || '';
+export const CLOUDINARY_CLOUD_NAME: string = env.VITE_CLOUDINARY_CLOUD_NAME || 'v21p1yqk';
+export const CLOUDINARY_UPLOAD_PRESET: string = env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ferest_uploads';
 
 export const isCloudinaryEnabled = () =>
     CLOUDINARY_CLOUD_NAME.length > 0 && CLOUDINARY_UPLOAD_PRESET.length > 0;
