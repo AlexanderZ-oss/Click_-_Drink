@@ -20,6 +20,7 @@ interface AuthContextType {
     signInWithGoogle: () => Promise<{ error: any }>;
     signIn: (email: string, password: string) => Promise<{ error: any }>;
     signUp: (email: string, password: string, fullName: string) => Promise<{ data?: any; error: any }>;
+    resetPassword: (email: string) => Promise<{ error: any }>;
     signOut: () => Promise<void>;
 }
 
@@ -73,9 +74,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (!error && data) {
                 setProfile(data);
+            } else {
+                // El perfil no existe (tipico del primer ingreso con Google):
+                // se crea automaticamente con los datos de la cuenta de Google.
+                await ensureProfile(userId);
             }
         } catch (error) {
             console.error('Error fetching profile:', error);
+        }
+    };
+
+    // Capa de blindaje: garantiza que TODO usuario autenticado tenga perfil,
+    // sin importar si entro por correo/clave o por Google.
+    const ensureProfile = async (userId: string) => {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user || user.id !== userId) return;
+            const email = user.email ?? '';
+            const fullName = (user.user_metadata?.full_name || user.user_metadata?.name || 'Cliente FEREST') as string;
+            const { data: created, error } = await supabase
+                .from('profiles')
+                .insert({ id: userId, email, full_name: fullName, role: isAdminEmail(email) ? 'admin' : 'user' })
+                .select()
+                .single();
+            if (!error && created) {
+                setProfile(created);
+            } else if (error) {
+                console.warn('ensureProfile warning:', error.message);
+            }
+        } catch (e) {
+            console.warn('ensureProfile error:', e);
         }
     };
 
@@ -123,6 +151,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const resetPassword = async (email: string) => {
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            return { error };
+        } catch (e) {
+            return { error: e };
+        }
+    };
+
     const signOut = async () => {
         await supabase.auth.signOut();
         setProfile(null);
@@ -133,7 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const isAdmin = profile?.role === 'admin' || isAdminEmail(user?.email);
 
     return (
-        <AuthContext.Provider value={{ user, profile, session, loading, isAdmin, signInWithGoogle, signIn, signUp, signOut }}>
+        <AuthContext.Provider value={{ user, profile, session, loading, isAdmin, signInWithGoogle, signIn, signUp, resetPassword, signOut }}>
             {children}
         </AuthContext.Provider>
     );
