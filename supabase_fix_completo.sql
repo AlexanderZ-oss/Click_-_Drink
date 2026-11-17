@@ -89,7 +89,7 @@ ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
 -- 3. FUNCIÓN is_admin() (necesaria para las políticas; se actualiza por si acaso)
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN AS $fn$
 BEGIN
   RETURN (
     EXISTS (
@@ -99,12 +99,12 @@ BEGIN
     OR (auth.jwt() ->> 'email' = 'leninzumaran0@gmail.com')
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$fn$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ---------------------------------------------------------------------------
 -- 4. POLÍTICAS QUE PODRÍAN FALTAR (se crean solo si NO existen todavía)
 -- ---------------------------------------------------------------------------
-DO $$
+DO $do$
 BEGIN
   -- ORDERS: clientes autenticados insertan sus pedidos (el checkout)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'orders' AND policyname = 'Users insert own orders') THEN
@@ -187,7 +187,8 @@ BEGIN
     CREATE POLICY "Users can update own profile" ON public.profiles
       FOR UPDATE USING (auth.uid() = id OR public.is_admin());
   END IF;
-END $$;
+END;
+$do$;
 
 -- ---------------------------------------------------------------------------
 -- 5. PERMISOS (GRANT) — necesarios para que las políticas se apliquen
@@ -211,7 +212,7 @@ VALUES ('events', 'events', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Políticas del bucket (idempotentes)
-DO $$
+DO $do$
 BEGIN
   -- Cualquiera puede VER las imágenes (bucket público)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public read events images') THEN
@@ -225,7 +226,8 @@ BEGIN
       FOR ALL TO authenticated USING (bucket_id = 'events' AND public.is_admin())
       WITH CHECK (bucket_id = 'events' AND public.is_admin());
   END IF;
-END $$;
+END;
+$do$;
 
 -- ---------------------------------------------------------------------------
 -- 7. REFRESCAR caché de esquema para que la API vea las columnas NUEVAS YA
