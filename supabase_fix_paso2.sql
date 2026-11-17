@@ -1,15 +1,12 @@
--- ============================================================================
--- FEREST PREMIUM — PASO 2 de 2: FUNCIÓN ADMIN + POLÍTICAS + STORAGE
--- ============================================================================
--- Ejecutar DESPUÉS del Paso 1.
--- Supabase Dashboard → SQL Editor → New query → pegar TODO → RUN
+-- FEREST PREMIUM - PASO 2 de 2: FUNCI-N ADMIN + POL-TICAS + STORAGE
+-- Ejecutar DESPU-S del Paso 1.
+-- Supabase Dashboard - SQL Editor - New query - pegar TODO - RUN
 --
 -- NOTA: este archivo usa delimitadores $fn$ y $do$ (en lugar de $$)
 -- para que el editor SQL de Supabase no los confunda.
 -- Es idempotente: repetirlo no rompe nada.
--- ============================================================================
 
--- 1. FUNCIÓN is_admin() — identifica al administrador (usada por las políticas)
+-- 1. FUNCI-N is_admin() - identifica al administrador (usada por las pol-ticas)
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $fn$
 BEGIN
@@ -23,7 +20,7 @@ BEGIN
 END;
 $fn$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 2. POLÍTICAS QUE PODRÍAN FALTAR (solo se crean si NO existen todavía)
+-- 2. POL-TICAS QUE PODR-AN FALTAR (solo se crean si NO existen todav-a)
 DO $do$
 BEGIN
   -- ORDERS: clientes autenticados insertan sus pedidos (el checkout)
@@ -54,7 +51,7 @@ BEGIN
     CREATE POLICY "Admin full access messages" ON public.messages FOR ALL USING (public.is_admin());
   END IF;
 
-  -- PRODUCTS: lectura pública de lo activo + admin controla todo
+  -- PRODUCTS: lectura p-blica de lo activo + admin controla todo
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'products' AND policyname = 'Public products view') THEN
     CREATE POLICY "Public products view" ON public.products FOR SELECT USING (active = true OR public.is_admin());
   END IF;
@@ -97,7 +94,7 @@ BEGIN
     CREATE POLICY "Admin full access analytics" ON public.analytics FOR ALL USING (public.is_admin());
   END IF;
 
-  -- PROFILES (por si el script anterior no corrió)
+  -- PROFILES (por si el script anterior no corri-)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users can view own profile or admins') THEN
     CREATE POLICY "Users can view own profile or admins" ON public.profiles
       FOR SELECT USING (auth.uid() = id OR public.is_admin());
@@ -113,21 +110,21 @@ BEGIN
 END;
 $do$;
 
--- 3. STORAGE: bucket público "events" para las imágenes de eventos
+-- 3. STORAGE: bucket p-blico "events" para las im-genes de eventos
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('events', 'events', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 4. POLÍTICAS DEL BUCKET (idempotentes)
+-- 4. POL-TICAS DEL BUCKET (idempotentes)
 DO $do$
 BEGIN
-  -- Cualquiera puede VER las imágenes (bucket público)
+  -- Cualquiera puede VER las im-genes (bucket p-blico)
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Public read events images') THEN
     CREATE POLICY "Public read events images" ON storage.objects
       FOR SELECT TO anon, authenticated USING (bucket_id = 'events');
   END IF;
 
-  -- Solo admin puede SUBIR/EDITAR/BORRAR imágenes
+  -- Solo admin puede SUBIR/EDITAR/BORRAR im-genes
   IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname = 'Admin write events images') THEN
     CREATE POLICY "Admin write events images" ON storage.objects
       FOR ALL TO authenticated USING (bucket_id = 'events' AND public.is_admin())
@@ -140,4 +137,8 @@ $do$;
 NOTIFY pgrst, 'reload schema';
 
 -- Resultado esperado: "Success. No rows returned"
--- Con esto el backend queda completo: checkout, contacto, imágenes y eventos.
+-- Con esto el backend queda completo: checkout, contacto, im-genes y eventos.
+
+
+
+
